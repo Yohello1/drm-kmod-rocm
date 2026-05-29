@@ -154,10 +154,6 @@ SRCS+=	amdgpu_aca.c \
 	atombios_encoders.c \
 	atombios_i2c.c \
 	aqua_vanjaram.c \
-	cik_ih.c \
-	cik_sdma.c \
-	cik.c \
-	cz_ih.c \
 	dimgrey_cavefish_reg_init.c \
 	df_v4_15.c \
 	emu_soc.c \
@@ -175,7 +171,6 @@ SRCS+=	amdgpu_aca.c \
 	hdp_v7_0.c \
 	aldebaran_reg_init.c \
 	aldebaran.c \
-	iceland_ih.c \
 	ih_v6_0.c \
 	ih_v6_1.c \
 	ih_v7_0.c \
@@ -218,7 +213,6 @@ SRCS+=	amdgpu_aca.c \
 	nbio_v7_7.c \
 	nbio_v7_9.c \
 	nbio_v7_11.c \
-	navi10_ih.c \
 	nv.c \
 	psp_v13_0_4.c \
 	psp_v14_0.c \
@@ -228,7 +222,6 @@ SRCS+=	amdgpu_aca.c \
 	si_dpm.c \
 	si_ih.c \
 	si_smc.c \
-	si.c \
 	soc15.c \
 	soc21.c \
 	soc24.c \
@@ -244,22 +237,11 @@ SRCS+=	amdgpu_aca.c \
 	umc_v8_7.c \
 	umc_v12_0.c \
 	umsch_mm_v4_0.c \
-	uvd_v3_1.c \
-	uvd_v4_2.c \
-	uvd_v5_0.c \
-	uvd_v6_0.c \
-	uvd_v7_0.c \
-	vce_v2_0.c \
-	vce_v3_0.c \
-	vce_v4_0.c \
 	vcn_sw_ring.c \
 	vcn_v4_0_5.c \
 	vcn_v5_0_0.c \
-	vega10_ih.c \
 	vega10_reg_init.c \
-	vega20_ih.c \
 	vega20_reg_init.c \
-	vi.c \
 	vpe_v6_1.c
 
 .if !empty(KCONFIG:MCOMPAT)
@@ -327,18 +309,11 @@ SRCS+=	amd_powerplay.c \
 	yellow_carp_ppt.c \
 	arcturus_ppt.c \
 	common_baco.c \
-	ci_smumgr.c \
-	ci_baco.c \
 	cyan_skillfish_ppt.c \
-	fiji_smumgr.c \
-	fiji_baco.c \
 	hardwaremanager.c \
 	hwmgr.c \
-	iceland_smumgr.c \
 	navi10_ppt.c \
 	renoir_ppt.c \
-	polaris10_smumgr.c \
-	polaris_baco.c \
 	pp_overdriver.c \
 	pp_psm.c \
 	ppatomctrl.c \
@@ -353,26 +328,7 @@ SRCS+=	amd_powerplay.c \
 	smu_v14_0_2_ppt.c \
 	smu_helper.c \
 	smumgr.c \
-	tonga_baco.c \
-	tonga_smumgr.c \
 	vangogh_ppt.c \
-	vega10_baco.c \
-	vega10_hwmgr.c \
-	vega10_powertune.c \
-	vega10_processpptables.c \
-	vega10_smumgr.c \
-	vega10_thermal.c \
-	vega12_baco.c \
-	vega12_hwmgr.c \
-	vega12_processpptables.c \
-	vega12_smumgr.c \
-	vega12_thermal.c \
-	vega20_baco.c \
-	vega20_hwmgr.c \
-	vega20_powertune.c \
-	vega20_processpptables.c \
-	vega20_smumgr.c \
-	vega20_thermal.c \
 	vegam_smumgr.c
 
 .ifdef (CONFIG_DEBUG_FS)
