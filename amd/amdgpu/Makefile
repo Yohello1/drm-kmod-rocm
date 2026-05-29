@@ -143,17 +143,12 @@ SRCS+=	amdgpu_aca.c \
 	amdgpu_xcp.c \
 	amdgpu_xgmi.c \
 	arct_reg_init.c \
-	athub_v1_0.c \
-	athub_v2_0.c \
-	athub_v2_1.c \
-	athub_v3_0.c \
 	athub_v4_1_0.c \
 	atom.c \
 	atombios_crtc.c \
 	atombios_dp.c \
 	atombios_encoders.c \
 	atombios_i2c.c \
-	aqua_vanjaram.c \
 	dimgrey_cavefish_reg_init.c \
 	df_v4_15.c \
 	emu_soc.c \
@@ -164,13 +159,8 @@ SRCS+=	amdgpu_aca.c \
 	gfxhub_v12_0.c \
 	gmc_v11_0.c \
 	gmc_v12_0.c \
-	hdp_v4_0.c \
-	hdp_v5_0.c \
-	hdp_v5_2.c \
-	hdp_v6_0.c \
 	hdp_v7_0.c \
 	aldebaran_reg_init.c \
-	aldebaran.c \
 	ih_v6_0.c \
 	ih_v6_1.c \
 	ih_v7_0.c \
@@ -189,14 +179,6 @@ SRCS+=	amdgpu_aca.c \
 	mca_v3_0.c \
 	mes_v11_0.c \
 	mes_v12_0.c \
-	mmhub_v1_0.c \
-	mmhub_v1_7.c \
-	mmhub_v1_8.c \
-	mmhub_v2_0.c \
-	mmhub_v2_3.c \
-	mmhub_v3_0.c \
-	mmhub_v3_0_1.c \
-	mmhub_v3_0_2.c \
 	mmhub_v4_1_0.c \
 	mmhub_v3_3.c \
 	mmhub_v9_4.c \
@@ -204,16 +186,8 @@ SRCS+=	amdgpu_aca.c \
 	mxgpu_nv.c \
 	mxgpu_vi.c \
 	nbif_v6_3_1.c \
-	nbio_v2_3.c \
-	nbio_v4_3.c \
-	nbio_v6_1.c \
-	nbio_v7_0.c \
-	nbio_v7_2.c \
-	nbio_v7_4.c \
-	nbio_v7_7.c \
 	nbio_v7_9.c \
 	nbio_v7_11.c \
-	nv.c \
 	psp_v13_0_4.c \
 	psp_v14_0.c \
 	sdma_v6_0.c \
@@ -251,46 +225,6 @@ SRCS+=	amdgpu_ioc32.c
 # amdxcp
 SRCS+=	amdgpu_xcp_drv.c
 
-# display/amdgpu_dm
-SRCS+=	amdgpu_dm_color.c \
-	amdgpu_dm_crc.c \
-	amdgpu_dm_crtc.c \
-	amdgpu_dm_debugfs.c \
-	amdgpu_dm_hdcp.c \
-	amdgpu_dm_helpers.c \
-	amdgpu_dm_irq.c \
-	amdgpu_dm_mst_types.c \
-	amdgpu_dm_plane.c \
-	amdgpu_dm_pp_smu.c \
-	amdgpu_dm_psr.c \
-	amdgpu_dm_replay.c \
-	amdgpu_dm_services.c \
-	amdgpu_dm_wb.c \
-	amdgpu_dm.c
-
-
-# display/dc/bios
-SRCS+=	bios_parser_common.c \
-	bios_parser_helper.c \
-	bios_parser_interface.c \
-	bios_parser.c \
-	bios_parser2.c \
-	command_table_helper.c \
-	command_table_helper2.c \
-	command_table.c \
-	command_table2.c \
-	command_table_helper2_dce112.c \
-	command_table_helper_dce110.c \
-	command_table_helper_dce112.c \
-	command_table_helper_dce60.c \
-	command_table_helper_dce80.c
-
-
-
-# display/dc
-SRCS+=	dc_helper.c \
-	dc_dmub_srv.c \
-	dc_edid_parser.c
 
 # Debug files, not handled for now
 SRCS_DEBUG=	amdgpu_dm_crc.c \
@@ -306,14 +240,9 @@ SRCS+=	amdgpu_acpi.c
 SRCS+=	amd_powerplay.c \
 	amdgpu_smu.c \
 	aldebaran_ppt.c \
-	yellow_carp_ppt.c \
-	arcturus_ppt.c \
 	common_baco.c \
-	cyan_skillfish_ppt.c \
 	hardwaremanager.c \
 	hwmgr.c \
-	navi10_ppt.c \
-	renoir_ppt.c \
 	pp_overdriver.c \
 	pp_psm.c \
 	ppatomctrl.c \
@@ -321,7 +250,6 @@ SRCS+=	amd_powerplay.c \
 	pppcielanes.c \
 	process_pptables_v1_0.c \
 	processpptables.c \
-	sienna_cichlid_ppt.c \
 	smu_cmn.c \
 	smu_v14_0.c \
 	smu_v14_0_0_ppt.c \
