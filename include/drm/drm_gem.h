@@ -43,7 +43,7 @@
 
 struct iosys_map;
 struct drm_gem_object;
-
+struct vfsmount;
 /**
  * enum drm_gem_object_status - bitmask of object state for fdinfo reporting
  * @DRM_GEM_OBJECT_RESIDENT: object is resident in memory (ie. not unpinned)
