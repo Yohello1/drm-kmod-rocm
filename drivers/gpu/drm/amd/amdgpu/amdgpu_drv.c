@@ -252,8 +252,11 @@ DECLARE_DYNDBG_CLASSMAP(drm_debug_classes, DD_CLASS_TYPE_DISJOINT_BITS, 0,
 
 #ifdef __linux__
 struct amdgpu_mgpu_info mgpu_info = {
-	.mutex = __MUTEX_INITIALIZER(mgpu_info.mutex),
+       .mutex = __MUTEX_INITIALIZER(mgpu_info.mutex),
 };
+#elif defined(__FreeBSD__)  
+struct amdgpu_mgpu_info mgpu_info;
+SX_SYSINIT(amdgpu_mgpu_info_mtx, &mgpu_info.mutex.sx, "amdgpu mgpu");
 #endif
 
 int amdgpu_ras_enable = -1;
