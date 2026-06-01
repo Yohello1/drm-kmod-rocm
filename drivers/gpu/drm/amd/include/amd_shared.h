@@ -381,7 +381,7 @@ struct amd_ip_funcs {
 	int (*late_init)(void *handle);
 	int (*sw_init)(void *handle);
 	int (*sw_fini)(void *handle);
-	int (*early_fini)(void *handle);
+	int (*early_fini)(struct amdgpu_ip_block *ip_block);
 	int (*hw_init)(void *handle);
 	int (*hw_fini)(void *handle);
 	void (*late_fini)(void *handle);
