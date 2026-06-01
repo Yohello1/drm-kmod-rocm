@@ -1,0 +1,11 @@
+@@ -263,6 +264,10 @@
+ 	WARN_ON(!list_empty(&file->event_list));
+ 
+ 	put_pid(rcu_access_pointer(file->pid));
++
++	mutex_destroy(&file->client_name_lock);
++	kfree(file->client_name);
++
+ 	kfree(file);
+ }
+ 
