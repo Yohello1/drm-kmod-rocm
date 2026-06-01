@@ -254,18 +254,6 @@ DECLARE_DYNDBG_CLASSMAP(drm_debug_classes, DD_CLASS_TYPE_DISJOINT_BITS, 0,
 struct amdgpu_mgpu_info mgpu_info = {
 	.mutex = __MUTEX_INITIALIZER(mgpu_info.mutex),
 };
-#elif defined(__FreeBSD__)
-struct amdgpu_mgpu_info mgpu_info;
-SX_SYSINIT(amdgpu_mgpu_info_mtx, &mgpu_info.mutex.sx, "amdgpu mgpu");
-
-static void __linux_delayed_mgpu_info_work_init(void *arg)
-{
-	linux_init_delayed_work(
-	    &mgpu_info.delayed_reset_work,
-	    amdgpu_drv_delayed_reset_work_handler);
-}
-SYSINIT(mgpu_info_delayed_reset_work, SI_SUB_LOCK, SI_ORDER_SECOND,
-    __linux_delayed_mgpu_info_work_init, NULL);
 #endif
 
 int amdgpu_ras_enable = -1;
