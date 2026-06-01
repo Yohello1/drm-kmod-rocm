@@ -1,0 +1,9 @@
+@@ -216,7 +216,7 @@
+ 
+ 	bdev->vma_manager = vma_manager;
+ 	spin_lock_init(&bdev->lru_lock);
+-	INIT_LIST_HEAD(&bdev->pinned);
++	INIT_LIST_HEAD(&bdev->unevictable);
+ 	bdev->dev_mapping = mapping;
+ 	mutex_lock(&ttm_global_mutex);
+ 	list_add_tail(&bdev->device_list, &glob->device_list);

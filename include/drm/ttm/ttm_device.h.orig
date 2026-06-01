@@ -252,10 +252,9 @@ struct ttm_device {
 	spinlock_t lru_lock;
 
 	/**
-	 * @unevictable Buffer objects which are pinned or swapped and as such
-	 * not on an LRU list.
+	 * @pinned: Buffer objects which are pinned and so not on any LRU list.
 	 */
-	struct list_head unevictable;
+	struct list_head pinned;
 
 	/**
 	 * @dev_mapping: A pointer to the struct address_space for invalidating
