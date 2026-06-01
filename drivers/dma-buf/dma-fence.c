@@ -132,7 +132,7 @@ dma_fence_signal_timestamp(struct dma_fence *fence, ktime_t timestamp)
 {
 	int rv;
 
-	if (fence == NULL)
+	if (WARN_ON(fence == NULL))
 		return (-EINVAL);
 
 	spin_lock(fence->lock);
@@ -158,7 +158,7 @@ dma_fence_signal(struct dma_fence *fence)
 {
 	int rv;
 
-	if (fence == NULL)
+	if (WARN_ON(!fence))
 		return (-EINVAL);
 
 	spin_lock(fence->lock);
