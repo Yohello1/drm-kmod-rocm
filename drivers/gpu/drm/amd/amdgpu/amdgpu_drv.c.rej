@@ -1,8 +1,0 @@
-@@ -2544,7 +2544,6 @@
- 	for (i = 0; i < mgpu_info.num_dgpu; i++) {
- 		adev = mgpu_info.gpu_ins[i].adev;
- 		flush_work(&adev->xgmi_reset_work);
--		adev->gmc.xgmi.pending_reset = false;
- 	}
- 
- 	/* reset function will rebuild the xgmi hive info , clear it now */
