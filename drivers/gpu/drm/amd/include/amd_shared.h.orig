@@ -382,7 +382,7 @@ struct amdgpu_ip_block;
 struct amd_ip_funcs {
 	char *name;
 	int (*early_init)(struct amdgpu_ip_block *ip_block);
-	int (*late_init)(void *handle);
+	int (*late_init)(struct amdgpu_ip_block *ip_block);
 	int (*sw_init)(void *handle);
 	int (*sw_fini)(void *handle);
 	int (*early_fini)(struct amdgpu_ip_block *ip_block);
