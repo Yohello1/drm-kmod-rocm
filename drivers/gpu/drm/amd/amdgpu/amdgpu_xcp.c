@@ -27,6 +27,11 @@
 #include <drm/drm_drv.h>
 #include "../amdxcp/amdgpu_xcp_drv.h"
 
+#ifndef __ATTR_RW_MODE
+#define __ATTR_RW_MODE(_name, _mode) \
+		__ATTR(_name, _mode, _name##_show, _name##_store)
+#endif
+
 static int __amdgpu_xcp_run(struct amdgpu_xcp_mgr *xcp_mgr,
 			    struct amdgpu_xcp_ip *xcp_ip, int xcp_state)
 {
