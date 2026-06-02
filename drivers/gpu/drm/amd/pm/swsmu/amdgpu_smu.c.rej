@@ -1,12 +1,13 @@
-@@ -1327,9 +1327,9 @@
- 	return 0;
- }
+@@ -1265,7 +1265,11 @@
+ 	smu->workload_prority[PP_SMC_POWER_PROFILE_VR] = 4;
+ 	smu->workload_prority[PP_SMC_POWER_PROFILE_COMPUTE] = 5;
+ 	smu->workload_prority[PP_SMC_POWER_PROFILE_CUSTOM] = 6;
+-	smu->workload_mask = 1 << smu->workload_prority[PP_SMC_POWER_PROFILE_BOOTUP_DEFAULT];
++
++	if (smu->is_apu)
++		smu->workload_mask = 1 << smu->workload_prority[PP_SMC_POWER_PROFILE_BOOTUP_DEFAULT];
++	else
++		smu->workload_mask = 1 << smu->workload_prority[PP_SMC_POWER_PROFILE_FULLSCREEN3D];
  
--static int smu_sw_fini(void *handle)
-+static int smu_sw_fini(struct amdgpu_ip_block *ip_block)
- {
--	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
-+	struct amdgpu_device *adev = ip_block->adev;
- 	struct smu_context *smu = adev->powerplay.pp_handle;
- 	int ret;
- 
+ 	smu->workload_setting[0] = PP_SMC_POWER_PROFILE_BOOTUP_DEFAULT;
+ 	smu->workload_setting[1] = PP_SMC_POWER_PROFILE_FULLSCREEN3D;

@@ -45,10 +45,18 @@ for patch_path in $(ls "$PATCH_DIR"/*.patch | sort -V 2>/dev/null); do
         patch -p1 --forward --batch < "$patch_path" > "$TMP_LOG" 2>&1
         PATCH_STATUS=$?
         
-        if [ $PATCH_STATUS -eq 0 ]; then
-            echo "✅ SUCCESS: Patch merged via lenient fallback. Staging commit..."
+        # Check if patch succeeded OR if it was safely ignored because it's already applied
+        if [ $PATCH_STATUS -eq 0 ] || grep -q -E "Previously applied|Skipping patch|ignored" "$TMP_LOG"; then
+            echo "✅ SUCCESS: Patch merged (or already applied). Staging commit..."
             git add .
-            git commit -m "Merged via lenient fallback: $patch_name" > /dev/null
+            
+            # Only commit if there are actually changes to commit (avoids empty commit errors)
+            if ! git diff-index --quiet HEAD; then
+                git commit -m "Merged via lenient fallback: $patch_name" > /dev/null
+            else
+                echo "ℹ️  No changes staged (patch was already fully applied)."
+            fi
+            
             # Move it out of the active folder so it's never processed again
             mv "$patch_path" "$APPLIED_DIR/"
         else
@@ -71,10 +79,18 @@ for patch_path in $(ls "$PATCH_DIR"/*.patch | sort -V 2>/dev/null); do
                 LOCAL_PATCH_STATUS=1
             fi
             
-            if [ $LOCAL_PATCH_STATUS -eq 0 ]; then
-                echo "✅ SUCCESS: Patch merged via deep lookup fallback. Staging commit..."
+            # Check if deep lookup succeeded OR if it was safely ignored because it's already applied
+            if [ $LOCAL_PATCH_STATUS -eq 0 ] || grep -q -E "Previously applied|Skipping patch|ignored" "$TMP_LOG"; then
+                echo "✅ SUCCESS: Patch merged via deep lookup (or already applied). Staging commit..."
                 git add .
-                git commit -m "Merged via deep lookup fallback: $patch_name" > /dev/null
+                
+                # Only commit if there are actually changes to commit
+                if ! git diff-index --quiet HEAD; then
+                    git commit -m "Merged via deep lookup fallback: $patch_name" > /dev/null
+                else
+                    echo "ℹ️  No changes staged (patch was already fully applied via deep lookup)."
+                fi
+                
                 # Move it out of the active folder so it's never processed again
                 mv "$patch_path" "$APPLIED_DIR/"
             else

@@ -1,0 +1,8 @@
+@@ -818,6 +819,7 @@
+ 	}
+ }
+ EXPORT_SYMBOL(drm_fb_helper_deferred_io);
++#endif
+ 
+ /**
+  * drm_fb_helper_set_suspend - wrapper around fb_set_suspend
