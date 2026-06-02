@@ -176,6 +176,7 @@ int drm_fb_helper_debug_enter(struct fb_info *info)
 	return 0;
 }
 EXPORT_SYMBOL(drm_fb_helper_debug_enter);
+#endif
 
 /**
  * drm_fb_helper_debug_leave - implementation for &fb_ops.fb_debug_leave
@@ -729,6 +730,7 @@ EXPORT_SYMBOL(drm_fb_helper_damage_area);
 // ifdef CONFIG_FB_DEFERRED_IO removed upstream
 // Does not compile, FreeBSD vm_page has no field lru
 
+#ifdef CONFIG_FB_DEFERRED_IO
 /**
  * drm_fb_helper_deferred_io() - fbdev deferred_io callback function
  * @info: fb_info struct pointer
@@ -774,6 +776,7 @@ void drm_fb_helper_deferred_io(struct fb_info *info, struct list_head *pagerefli
 EXPORT_SYMBOL(drm_fb_helper_deferred_io);
 #endif /* defined(__linux__) */
 
+#ifdef CONFIG_FB_DEFERRED_IO
 /**
  * drm_fb_helper_set_suspend - wrapper around fb_set_suspend
  * @fb_helper: driver-allocated fbdev helper, can be NULL
