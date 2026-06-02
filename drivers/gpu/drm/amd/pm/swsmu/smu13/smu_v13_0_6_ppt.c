@@ -288,7 +288,7 @@ struct PPTable_t {
 #define SMUQ10_FRAC(x) ((x) & 0x3ff)
 #define SMUQ10_ROUND(x) ((SMUQ10_TO_UINT(x)) + ((SMUQ10_FRAC(x)) >= 0x200))
 #define GET_METRIC_FIELD(field, flag) ((flag) ?\
-		(metrics_a->field) : (metrics_x->field))
+		(metrics_v1->field) : (metrics_v0->field))
 
 struct smu_v13_0_6_dpm_map {
 	enum smu_clk_type clk_type;
@@ -373,7 +373,7 @@ static int smu_v13_0_6_tables_init(struct smu_context *smu)
 			       PAGE_SIZE, AMDGPU_GEM_DOMAIN_VRAM);
 
 	SMU_TABLE_INIT(tables, SMU_TABLE_SMU_METRICS,
-		       max(sizeof(MetricsTableX_t), sizeof(MetricsTableA_t)),
+		       max(sizeof(MetricsTableV0_t), sizeof(MetricsTableV1_t)),
 		       PAGE_SIZE,
 		       AMDGPU_GEM_DOMAIN_VRAM | AMDGPU_GEM_DOMAIN_GTT);
 
@@ -381,8 +381,8 @@ static int smu_v13_0_6_tables_init(struct smu_context *smu)
 		       PAGE_SIZE,
 		       AMDGPU_GEM_DOMAIN_VRAM | AMDGPU_GEM_DOMAIN_GTT);
 
-	smu_table->metrics_table = kzalloc(max(sizeof(MetricsTableX_t),
-		       sizeof(MetricsTableA_t)), GFP_KERNEL);
+	smu_table->metrics_table = kzalloc(max(sizeof(MetricsTableV0_t),
+					       sizeof(MetricsTableV1_t)), GFP_KERNEL);
 	if (!smu_table->metrics_table)
 		return -ENOMEM;
 	smu_table->metrics_time = 0;
@@ -614,8 +614,8 @@ static ssize_t smu_v13_0_6_get_pm_metrics(struct smu_context *smu,
 static int smu_v13_0_6_setup_driver_pptable(struct smu_context *smu)
 {
 	struct smu_table_context *smu_table = &smu->smu_table;
-	MetricsTableX_t *metrics_x = (MetricsTableX_t *)smu_table->metrics_table;
-	MetricsTableA_t *metrics_a = (MetricsTableA_t *)smu_table->metrics_table;
+	MetricsTableV0_t *metrics_v0 = (MetricsTableV0_t *)smu_table->metrics_table;
+	MetricsTableV1_t *metrics_v1 = (MetricsTableV1_t *)smu_table->metrics_table;
 	struct PPTable_t *pptable =
 		(struct PPTable_t *)smu_table->driver_pptable;
 	bool flag = smu_v13_0_6_is_unified_metrics(smu);
@@ -2528,7 +2528,7 @@ static ssize_t smu_v13_0_6_get_gpu_metrics(struct smu_context *smu, void **table
 	gpu_metrics->firmware_timestamp = GET_METRIC_FIELD(Timestamp, flag);
 
 	*table = (void *)gpu_metrics;
-	kfree(metrics_x);
+	kfree(metrics_v0);
 
 	return sizeof(*gpu_metrics);
 }
