@@ -156,6 +156,11 @@ struct amdgpu_init_level amdgpu_init_default = {
 	.hwini_ip_block_mask = AMDGPU_IP_BLK_MASK_ALL,
 };
 
+struct amdgpu_init_level amdgpu_init_recovery = {
+	.level = AMDGPU_INIT_LEVEL_RESET_RECOVERY,
+	.hwini_ip_block_mask = AMDGPU_IP_BLK_MASK_ALL,
+};
+
 /*
  * Minimal blocks needed to be initialized before a XGMI hive can be reset. This
  * is used for cases like reset on initialization where the entire hive needs to
@@ -181,6 +186,9 @@ void amdgpu_set_init_level(struct amdgpu_device *adev,
 	switch (lvl) {
 	case AMDGPU_INIT_LEVEL_MINIMAL_XGMI:
 		adev->init_lvl = &amdgpu_init_minimal_xgmi;
+		break;
+	case AMDGPU_INIT_LEVEL_RESET_RECOVERY:
+		adev->init_lvl = &amdgpu_init_recovery;
 		break;
 	case AMDGPU_INIT_LEVEL_DEFAULT:
 		fallthrough;
@@ -5567,6 +5575,9 @@ int amdgpu_device_reinit_after_reset(struct amdgpu_reset_context *reset_context)
 
 out:
 		if (!r) {
+			/* IP init is complete now, set level as default */
+			amdgpu_set_init_level(tmp_adev,
+					      AMDGPU_INIT_LEVEL_DEFAULT);
 			amdgpu_irq_gpu_reset_resume_helper(tmp_adev);
 			r = amdgpu_ib_ring_tests(tmp_adev);
 			if (r) {
