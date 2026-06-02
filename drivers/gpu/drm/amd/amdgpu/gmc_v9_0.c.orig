@@ -623,6 +623,9 @@ static int gmc_v9_0_process_interrupt(struct amdgpu_device *adev,
 		}
 	}
 
+	if (kgd2kfd_vmfault_fast_path(adev, entry, retry_fault))
+		return 1;
+
 	if (!printk_ratelimit())
 		return 0;
 
@@ -1138,12 +1141,13 @@ static void gmc_v9_0_get_coherence_flags(struct amdgpu_device *adev,
 	bool uncached = bo->flags & AMDGPU_GEM_CREATE_UNCACHED;
 	struct amdgpu_vm *vm = mapping->bo_va->base.vm;
 	unsigned int mtype_local, mtype;
+	uint32_t gc_ip_version = amdgpu_ip_version(adev, GC_HWIP, 0);
 	bool snoop = false;
 	bool is_local;
 
 	dma_resv_assert_held(bo->tbo.base.resv);
 
-	switch (amdgpu_ip_version(adev, GC_HWIP, 0)) {
+	switch (gc_ip_version) {
 	case IP_VERSION(9, 4, 1):
 	case IP_VERSION(9, 4, 2):
 		if (is_vram) {
@@ -1157,10 +1161,7 @@ static void gmc_v9_0_get_coherence_flags(struct amdgpu_device *adev,
 				/* FIXME: is this still needed? Or does
 				 * amdgpu_ttm_tt_pde_flags already handle this?
 				 */
-				if ((amdgpu_ip_version(adev, GC_HWIP, 0) ==
-					     IP_VERSION(9, 4, 2) ||
-				     amdgpu_ip_version(adev, GC_HWIP, 0) ==
-					     IP_VERSION(9, 4, 3)) &&
+				if (gc_ip_version == IP_VERSION(9, 4, 2) &&
 				    adev->gmc.xgmi.connected_to_cpu)
 					snoop = true;
 			} else {
@@ -1208,7 +1209,7 @@ static void gmc_v9_0_get_coherence_flags(struct amdgpu_device *adev,
 		if (uncached) {
 			mtype = MTYPE_UC;
 		} else if (ext_coherent) {
-			if (adev->rev_id)
+			if (gc_ip_version == IP_VERSION(9, 5, 0) || adev->rev_id)
 				mtype = is_local ? MTYPE_CC : MTYPE_UC;
 			else
 				mtype = MTYPE_UC;
@@ -1218,10 +1219,10 @@ static void gmc_v9_0_get_coherence_flags(struct amdgpu_device *adev,
 			/* dGPU */
 			if (is_local)
 				mtype = mtype_local;
-			else if (is_vram)
-				mtype = MTYPE_NC;
-			else
+			else if (gc_ip_version < IP_VERSION(9, 5, 0) && !is_vram)
 				mtype = MTYPE_UC;
+			else
+				mtype = MTYPE_NC;
 		}
 
 		break;
@@ -1503,7 +1504,6 @@ static void gmc_v9_0_set_umc_funcs(struct amdgpu_device *adev)
 		adev->umc.umc_inst_num = UMC_V12_0_UMC_INSTANCE_NUM;
 		adev->umc.node_inst_num /= UMC_V12_0_UMC_INSTANCE_NUM;
 		adev->umc.channel_offs = UMC_V12_0_PER_CHANNEL_OFFSET;
-		adev->umc.active_mask = adev->aid_mask;
 		adev->umc.retire_unit = UMC_V12_0_BAD_PAGE_NUM_PER_CHANNEL;
 		if (!adev->gmc.xgmi.connected_to_cpu && !adev->gmc.is_app_apu)
 			adev->umc.ras = &umc_v12_0_ras;
@@ -1544,6 +1544,7 @@ static void gmc_v9_0_set_mmhub_ras_funcs(struct amdgpu_device *adev)
 		adev->mmhub.ras = &mmhub_v1_7_ras;
 		break;
 	case IP_VERSION(1, 8, 0):
+	case IP_VERSION(1, 8, 1):
 		adev->mmhub.ras = &mmhub_v1_8_ras;
 		break;
 	default:
@@ -2548,10 +2549,10 @@ static int gmc_v9_0_soft_reset(struct amdgpu_ip_block *ip_block)
 	return 0;
 }
 
-static int gmc_v9_0_set_clockgating_state(void *handle,
+static int gmc_v9_0_set_clockgating_state(struct amdgpu_ip_block *ip_block,
 					enum amd_clockgating_state state)
 {
-	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
+	struct amdgpu_device *adev = ip_block->adev;
 
 	adev->mmhub.funcs->set_clockgating(adev, state);
 

@@ -411,6 +411,11 @@ static const uint32_t ecc_umc_mcumc_ctrl_mask_addrs[] = {
 	(0x001d43e0 + 0x00001800),
 };
 
+static inline bool gmc_v9_0_is_multi_chiplet(struct amdgpu_device *adev)
+{
+	return !!adev->aid_mask;
+}
+
 static int gmc_v9_0_ecc_interrupt_state(struct amdgpu_device *adev,
 		struct amdgpu_irq_src *src,
 		unsigned int type,
@@ -1633,8 +1638,7 @@ static int gmc_v9_0_early_init(struct amdgpu_ip_block *ip_block)
 			adev->smuio.funcs->is_host_gpu_xgmi_supported(adev);
 	}
 
-	if (amdgpu_ip_version(adev, GC_HWIP, 0) == IP_VERSION(9, 4, 3) ||
-	    amdgpu_ip_version(adev, GC_HWIP, 0) == IP_VERSION(9, 4, 4)) {
+	if (amdgpu_ip_version(adev, GC_HWIP, 0) == IP_VERSION(9, 4, 3)) {
 		enum amdgpu_pkg_type pkg_type =
 			adev->smuio.funcs->get_pkg_type(adev);
 		/* On GFXIP 9.4.3. APU, there is no physical VRAM domain present
