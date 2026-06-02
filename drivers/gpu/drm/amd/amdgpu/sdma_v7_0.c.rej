@@ -1,12 +1,23 @@
-@@ -1326,9 +1326,9 @@
- 	return r;
- }
+@@ -51,6 +51,12 @@
+ #define SDMA0_HYP_DEC_REG_END 0x589a
+ #define SDMA1_HYP_DEC_REG_OFFSET 0x20
  
--static int sdma_v7_0_sw_fini(void *handle)
-+static int sdma_v7_0_sw_fini(struct amdgpu_ip_block *ip_block)
++/*define for compression field for sdma7*/
++#define SDMA_PKT_CONSTANT_FILL_HEADER_compress_offset 0
++#define SDMA_PKT_CONSTANT_FILL_HEADER_compress_mask   0x00000001
++#define SDMA_PKT_CONSTANT_FILL_HEADER_compress_shift  16
++#define SDMA_PKT_CONSTANT_FILL_HEADER_COMPRESS(x) (((x) & SDMA_PKT_CONSTANT_FILL_HEADER_compress_mask) << SDMA_PKT_CONSTANT_FILL_HEADER_compress_shift)
++
+ static const struct amdgpu_hwip_reg_entry sdma_reg_list_7_0[] = {
+ 	SOC15_REG_ENTRY_STR(GC, 0, regSDMA0_STATUS_REG),
+ 	SOC15_REG_ENTRY_STR(GC, 0, regSDMA0_STATUS1_REG),
+@@ -1720,7 +1726,8 @@
+ 				       uint64_t dst_offset,
+ 				       uint32_t byte_count)
  {
--	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
-+	struct amdgpu_device *adev = ip_block->adev;
- 	int i;
- 
- 	for (i = 0; i < adev->sdma.num_instances; i++)
+-	ib->ptr[ib->length_dw++] = SDMA_PKT_COPY_LINEAR_HEADER_OP(SDMA_OP_CONST_FILL);
++	ib->ptr[ib->length_dw++] = SDMA_PKT_CONSTANT_FILL_HEADER_OP(SDMA_OP_CONST_FILL) |
++		SDMA_PKT_CONSTANT_FILL_HEADER_COMPRESS(1);
+ 	ib->ptr[ib->length_dw++] = lower_32_bits(dst_offset);
+ 	ib->ptr[ib->length_dw++] = upper_32_bits(dst_offset);
+ 	ib->ptr[ib->length_dw++] = src_data;
