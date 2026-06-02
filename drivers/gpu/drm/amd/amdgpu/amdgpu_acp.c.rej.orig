@@ -1,0 +1,9 @@
+@@ -603,8 +603,6 @@
+ 
+ static const struct amd_ip_funcs acp_ip_funcs = {
+ 	.name = "acp_ip",
+-	.early_init = NULL,
+-	.late_init = NULL,
+ 	.sw_init = acp_sw_init,
+ 	.sw_fini = acp_sw_fini,
+ 	.hw_init = acp_hw_init,
