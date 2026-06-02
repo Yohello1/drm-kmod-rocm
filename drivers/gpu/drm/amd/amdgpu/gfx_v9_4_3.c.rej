@@ -1,13 +1,15 @@
-@@ -1181,10 +1181,10 @@
- 	return 0;
- }
+@@ -580,10 +581,12 @@
  
--static int gfx_v9_4_3_sw_fini(void *handle)
-+static int gfx_v9_4_3_sw_fini(struct amdgpu_ip_block *ip_block)
- {
- 	int i, num_xcc;
--	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
-+	struct amdgpu_device *adev = ip_block->adev;
- 
- 	num_xcc = NUM_XCC(adev->gfx.xcc_mask);
- 	for (i = 0; i < adev->gfx.num_compute_rings * num_xcc; i++)
+ 	if (amdgpu_sriov_vf(adev))
+ 		err = amdgpu_ucode_request(adev, &adev->gfx.mec_fw,
+-				"amdgpu/%s_sjt_mec.bin", chip_name);
++					   AMDGPU_UCODE_REQUIRED,
++					   "amdgpu/%s_sjt_mec.bin", chip_name);
+ 	else
+ 		err = amdgpu_ucode_request(adev, &adev->gfx.mec_fw,
+-				"amdgpu/%s_mec.bin", chip_name);
++					   AMDGPU_UCODE_REQUIRED,
++					   "amdgpu/%s_mec.bin", chip_name);
+ 	if (err)
+ 		goto out;
+ 	amdgpu_gfx_cp_init_microcode(adev, AMDGPU_UCODE_ID_CP_MEC1);

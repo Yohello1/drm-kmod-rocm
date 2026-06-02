@@ -547,6 +547,7 @@ static int gfx_v9_4_3_init_rlc_microcode(struct amdgpu_device *adev,
 
 
 	err = amdgpu_ucode_request(adev, &adev->gfx.rlc_fw,
+				   AMDGPU_UCODE_REQUIRED,
 				   "amdgpu/%s_rlc.bin", chip_name);
 	if (err)
 		goto out;
