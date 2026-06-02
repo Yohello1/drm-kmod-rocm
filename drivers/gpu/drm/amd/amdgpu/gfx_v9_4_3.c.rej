@@ -1,15 +1,19 @@
-@@ -580,10 +581,12 @@
+@@ -579,11 +579,16 @@
+ {
+ 	int err;
  
- 	if (amdgpu_sriov_vf(adev))
+-	if (amdgpu_sriov_vf(adev))
++	if (amdgpu_sriov_vf(adev)) {
  		err = amdgpu_ucode_request(adev, &adev->gfx.mec_fw,
--				"amdgpu/%s_sjt_mec.bin", chip_name);
-+					   AMDGPU_UCODE_REQUIRED,
-+					   "amdgpu/%s_sjt_mec.bin", chip_name);
- 	else
+ 					   AMDGPU_UCODE_REQUIRED,
+ 					   "amdgpu/%s_sjt_mec.bin", chip_name);
+-	else
++
++		if (err)
++			err = amdgpu_ucode_request(adev, &adev->gfx.mec_fw,
++							AMDGPU_UCODE_REQUIRED,
++							"amdgpu/%s_mec.bin", chip_name);
++	} else
  		err = amdgpu_ucode_request(adev, &adev->gfx.mec_fw,
--				"amdgpu/%s_mec.bin", chip_name);
-+					   AMDGPU_UCODE_REQUIRED,
-+					   "amdgpu/%s_mec.bin", chip_name);
- 	if (err)
- 		goto out;
- 	amdgpu_gfx_cp_init_microcode(adev, AMDGPU_UCODE_ID_CP_MEC1);
+ 					   AMDGPU_UCODE_REQUIRED,
+ 					   "amdgpu/%s_mec.bin", chip_name);
