@@ -1376,7 +1376,7 @@ static int amdgpu_ras_query_error_status_helper(struct amdgpu_device *adev,
 		return -EINVAL;
 
 	if (error_query_mode == AMDGPU_RAS_VIRT_ERROR_COUNT_QUERY) {
-		return amdgpu_virt_req_ras_err_count(adev, blk, err_data);
+		return -EOPNOTSUPP; 
 	} else if (error_query_mode == AMDGPU_RAS_DIRECT_ERROR_QUERY) {
 		if (info->head.block == AMDGPU_RAS_BLOCK__UMC) {
 			amdgpu_ras_get_ecc_info(adev, err_data);
@@ -4218,7 +4218,7 @@ int amdgpu_ras_late_init(struct amdgpu_device *adev)
 	}
 
 	/* Guest side doesn't need init ras feature */
-	if (amdgpu_sriov_vf(adev) && !amdgpu_sriov_ras_telemetry_en(adev))
+	if (amdgpu_sriov_vf(adev))
 		return 0;
 
 	list_for_each_entry_safe(node, tmp, &adev->ras_list, node) {

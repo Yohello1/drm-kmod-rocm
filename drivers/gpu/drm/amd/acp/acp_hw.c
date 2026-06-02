@@ -27,6 +27,8 @@
 #include <linux/delay.h>
 #include <linux/errno.h>
 
+#include <linux/cleanup.h>
+
 #include "acp_gfx_if.h"
 
 #define ACP_MODE_I2S	0

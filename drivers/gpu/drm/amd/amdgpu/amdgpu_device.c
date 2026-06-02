@@ -5329,7 +5329,7 @@ static int amdgpu_device_reset_sriov(struct amdgpu_device *adev,
 	    amdgpu_ip_version(adev, GC_HWIP, 0) == IP_VERSION(11, 0, 3))
 		amdgpu_ras_resume(adev);
 
-	amdgpu_virt_ras_telemetry_post_reset(adev);
+	// amdgpu_virt_ras_telemetry_post_reset(adev);
 
 	return 0;
 }

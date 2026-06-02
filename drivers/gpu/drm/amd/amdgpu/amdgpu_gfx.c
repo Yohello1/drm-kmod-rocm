@@ -1823,7 +1823,7 @@ int amdgpu_gfx_sysfs_init(struct amdgpu_device *adev)
 
 void amdgpu_gfx_sysfs_fini(struct amdgpu_device *adev)
 {
-	if (adev->dev->kobj.sd) {
+	if (adev->dev->kobj.name) {
 		amdgpu_gfx_sysfs_xcp_fini(adev);
 		amdgpu_gfx_sysfs_isolation_shader_fini(adev);
 		amdgpu_gfx_sysfs_reset_mask_fini(adev);

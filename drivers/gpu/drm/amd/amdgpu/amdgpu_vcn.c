@@ -1324,7 +1324,7 @@ int amdgpu_vcn_sysfs_reset_mask_init(struct amdgpu_device *adev)
 
 void amdgpu_vcn_sysfs_reset_mask_fini(struct amdgpu_device *adev)
 {
-	if (adev->dev->kobj.sd) {
+	if (adev->dev->kobj.name) {
 		if (adev->vcn.num_vcn_inst)
 			device_remove_file(adev->dev, &dev_attr_vcn_reset_mask);
 	}

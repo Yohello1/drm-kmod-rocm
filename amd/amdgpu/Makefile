@@ -278,6 +278,10 @@ CLEANFILES+= ${KMOD}.ko.full ${KMOD}.ko.debug
 
 .include <bsd.kmod.mk>
 
+# NEVER EVER DO THIS
+CFLAGS+= -include /root/dev/temp2/drm-kmod/amd/amdgpu/amdgpu_cleanup_shim.h
+
+
 # These Makefiles are included after <bsd.kmod.mk> because they expand
 # variables defined by it.
 .include "../../linuxkpi_version.mk"
@@ -287,6 +291,7 @@ CFLAGS+= -I${.CURDIR:H:H}/linuxkpi/gplv2/include
 CFLAGS+= -I${.CURDIR:H:H}/linuxkpi/bsd/include
 CFLAGS+= -I${SYSDIR}/compat/linuxkpi/common/include
 CFLAGS+= -I${SYSDIR}/compat/linuxkpi/dummy/include
+
 
 CFLAGS+= -I${.CURDIR:H:H}/include
 CFLAGS+= -I${.CURDIR:H:H}/include/drm

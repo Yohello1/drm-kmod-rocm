@@ -130,7 +130,7 @@ dma_fence_array_signaled(struct dma_fence *fence)
 	}
 
 signal:
-	dma_fence_array_clear_pending_error(array)
+	dma_fence_array_clear_pending_error(array);
 	return (true); 
 }
 
