@@ -1,11 +1,29 @@
-@@ -2582,8 +2585,9 @@
+@@ -1400,18 +1409,28 @@
+  */
+ static int amdgpu_device_asic_init(struct amdgpu_device *adev)
  {
- 	struct amdgpu_ip_block *ip_block;
- 	struct pci_dev *parent;
-+	bool total, skip_bios;
-+	uint32_t bios_flags;
- 	int i, r;
--	bool total;
++	uint32_t flags;
++	bool optional;
+ 	int ret;
  
- 	amdgpu_device_enable_virtual_display(adev);
+ 	amdgpu_asic_pre_asic_init(adev);
++	flags = amdgpu_device_get_vbios_flags(adev);
++	optional = !!(flags & (AMDGPU_VBIOS_OPTIONAL | AMDGPU_VBIOS_SKIP));
+ 
+ 	if (amdgpu_ip_version(adev, GC_HWIP, 0) == IP_VERSION(9, 4, 3) ||
+ 	    amdgpu_ip_version(adev, GC_HWIP, 0) == IP_VERSION(9, 4, 4) ||
+ 	    amdgpu_ip_version(adev, GC_HWIP, 0) == IP_VERSION(9, 5, 0) ||
+ 	    amdgpu_ip_version(adev, GC_HWIP, 0) >= IP_VERSION(11, 0, 0)) {
+ 		amdgpu_psp_wait_for_bootloader(adev);
++		if (optional && !adev->bios)
++			return 0;
++
+ 		ret = amdgpu_atomfirmware_asic_init(adev, true);
+ 		return ret;
+ 	} else {
++		if (optional && !adev->bios)
++			return 0;
++
+ 		return amdgpu_atom_asic_init(adev->mode_info.atom_context);
+ 	}
  
