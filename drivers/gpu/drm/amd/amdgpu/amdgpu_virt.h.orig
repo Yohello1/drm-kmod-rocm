@@ -103,7 +103,6 @@ struct amdgpu_virt_ops {
 struct amdgpu_virt_fw_reserve {
 	struct amd_sriov_msg_pf2vf_info_header *p_pf2vf;
 	struct amd_sriov_msg_vf2pf_info_header *p_vf2pf;
-	void *ras_telemetry;
 	unsigned int checksum_key;
 };
 
@@ -320,12 +319,6 @@ struct amdgpu_video_codec_info;
 
 #define amdgpu_sriov_vf_mmio_access_protection(adev) \
 ((adev)->virt.caps & AMDGPU_VF_MMIO_ACCESS_PROTECT)
-
-#define amdgpu_sriov_ras_telemetry_en(adev) \
-(((adev)->virt.gim_feature & AMDGIM_FEATURE_RAS_TELEMETRY) && (adev)->virt.fw_reserve.ras_telemetry)
-
-#define amdgpu_sriov_ras_telemetry_block_en(adev, sriov_blk) \
-(amdgpu_sriov_ras_telemetry_en((adev)) && (adev)->virt.ras_telemetry_en_caps.all & BIT(sriov_blk))
 
 static inline bool is_virtual_machine(void)
 {
