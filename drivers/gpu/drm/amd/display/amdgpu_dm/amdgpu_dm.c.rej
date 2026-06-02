@@ -1,12 +1,10 @@
-@@ -2541,9 +2541,9 @@
- 	return load_dmcu_fw(adev);
- }
+@@ -1989,6 +1989,9 @@
+ 	if (amdgpu_dc_debug_mask & DC_FORCE_SUBVP_MCLK_SWITCH)
+ 		adev->dm.dc->debug.force_subvp_mclk_switch = true;
  
--static int dm_sw_fini(void *handle)
-+static int dm_sw_fini(struct amdgpu_ip_block *ip_block)
- {
--	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
-+	struct amdgpu_device *adev = ip_block->adev;
- 	struct dal_allocation *da;
- 
- 	list_for_each_entry(da, &adev->dm.da_list, list) {
++	if (amdgpu_dc_debug_mask & DC_DISABLE_SUBVP)
++		adev->dm.dc->debug.force_disable_subvp = true;
++
+ 	if (amdgpu_dc_debug_mask & DC_ENABLE_DML2) {
+ 		adev->dm.dc->debug.using_dml2 = true;
+ 		adev->dm.dc->debug.using_dml21 = true;
