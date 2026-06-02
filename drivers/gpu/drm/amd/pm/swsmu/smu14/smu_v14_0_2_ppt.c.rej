@@ -1,9 +1,21 @@
-@@ -1342,7 +1342,7 @@
- 							  PP_OD_FEATURE_GFXCLK_FMAX,
- 							  NULL,
- 							  &max_value);
--			size += sysfs_emit_at(buf, size, "SCLK: %7uMhz %10uMhz\n",
-+			size += sysfs_emit_at(buf, size, "SCLK_OFFSET: %7dMhz %10uMhz\n",
- 					      min_value, max_value);
- 		}
+@@ -1725,7 +1725,7 @@
+ 	DpmActivityMonitorCoeffInt_t *activity_monitor =
+ 		&(activity_monitor_external.DpmActivityMonitorCoeffInt);
+ 	int workload_type, ret = 0;
+-
++	uint32_t current_profile_mode = smu->power_profile_mode;
+ 	smu->power_profile_mode = input[size];
  
+ 	if (smu->power_profile_mode >= PP_SMC_POWER_PROFILE_COUNT) {
+@@ -1783,6 +1783,11 @@
+ 		}
+ 	}
+ 
++	if (smu->power_profile_mode == PP_SMC_POWER_PROFILE_COMPUTE)
++		smu_v14_0_deep_sleep_control(smu, false);
++	else if (current_profile_mode == PP_SMC_POWER_PROFILE_COMPUTE)
++		smu_v14_0_deep_sleep_control(smu, true);
++
+ 	/* conv PP_SMC_POWER_PROFILE* to WORKLOAD_PPLIB_*_BIT */
+ 	workload_type = smu_cmn_to_asic_specific_index(smu,
+ 						       CMN2ASIC_MAPPING_WORKLOAD,
