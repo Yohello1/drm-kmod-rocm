@@ -1,12 +1,26 @@
-@@ -303,9 +303,9 @@
-  *
-  * VCN suspend and free up sw allocation
-  */
--static int vcn_v3_0_sw_fini(void *handle)
-+static int vcn_v3_0_sw_fini(struct amdgpu_ip_block *ip_block)
- {
--	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
-+	struct amdgpu_device *adev = ip_block->adev;
- 	int i, r, idx;
+@@ -1141,8 +1141,10 @@
+ 	uint32_t rb_bufsz, tmp;
+ 	int i, j, k, r;
  
- 	if (drm_dev_enter(adev_to_drm(adev), &idx)) {
+-	if (adev->pm.dpm_enabled)
+-		amdgpu_dpm_enable_vcn(adev, true);
++	for (i = 0; i < adev->vcn.num_vcn_inst; ++i) {
++		if (adev->pm.dpm_enabled)
++			amdgpu_dpm_enable_vcn(adev, true, i);
++	}
+ 
+ 	for (i = 0; i < adev->vcn.num_vcn_inst; ++i) {
+ 		if (adev->vcn.harvest_config & (1 << i))
+@@ -1632,8 +1634,10 @@
+ 		vcn_v3_0_enable_static_power_gating(adev, i);
+ 	}
+ 
+-	if (adev->pm.dpm_enabled)
+-		amdgpu_dpm_enable_vcn(adev, false);
++	for (i = 0; i < adev->vcn.num_vcn_inst; ++i) {
++		if (adev->pm.dpm_enabled)
++			amdgpu_dpm_enable_vcn(adev, false, i);
++	}
+ 
+ 	return 0;
+ }

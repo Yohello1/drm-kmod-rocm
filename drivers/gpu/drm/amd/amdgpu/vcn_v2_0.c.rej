@@ -1,13 +1,18 @@
-@@ -241,10 +241,10 @@
-  *
-  * VCN suspend and free up sw allocation
-  */
--static int vcn_v2_0_sw_fini(void *handle)
-+static int vcn_v2_0_sw_fini(struct amdgpu_ip_block *ip_block)
- {
- 	int r, idx;
--	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
-+	struct amdgpu_device *adev = ip_block->adev;
- 	volatile struct amdgpu_fw_shared *fw_shared = adev->vcn.inst->fw_shared.cpu_addr;
+@@ -978,7 +978,7 @@
+ 	int i, j, r;
  
- 	if (drm_dev_enter(adev_to_drm(adev), &idx)) {
+ 	if (adev->pm.dpm_enabled)
+-		amdgpu_dpm_enable_vcn(adev, true);
++		amdgpu_dpm_enable_vcn(adev, true, 0);
+ 
+ 	if (adev->pg_flags & AMD_PG_SUPPORT_VCN_DPG)
+ 		return vcn_v2_0_start_dpg_mode(adev, adev->vcn.indirect_sram);
+@@ -1235,7 +1235,7 @@
+ 
+ power_off:
+ 	if (adev->pm.dpm_enabled)
+-		amdgpu_dpm_enable_vcn(adev, false);
++		amdgpu_dpm_enable_vcn(adev, false, 0);
+ 
+ 	return 0;
+ }
