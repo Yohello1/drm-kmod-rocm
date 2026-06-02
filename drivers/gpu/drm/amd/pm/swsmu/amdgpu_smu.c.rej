@@ -1,13 +1,25 @@
-@@ -1265,7 +1265,11 @@
- 	smu->workload_prority[PP_SMC_POWER_PROFILE_VR] = 4;
+@@ -1236,6 +1236,14 @@
+ 	}
+ }
+ 
++static bool smu_is_workload_profile_available(struct smu_context *smu,
++					      u32 profile)
++{
++	if (profile >= PP_SMC_POWER_PROFILE_COUNT)
++		return false;
++	return smu->workload_map && smu->workload_map[profile].valid_mapping;
++}
++
+ static int smu_sw_init(struct amdgpu_ip_block *ip_block)
+ {
+ 	struct amdgpu_device *adev = ip_block->adev;
+@@ -1267,7 +1275,8 @@
  	smu->workload_prority[PP_SMC_POWER_PROFILE_COMPUTE] = 5;
  	smu->workload_prority[PP_SMC_POWER_PROFILE_CUSTOM] = 6;
--	smu->workload_mask = 1 << smu->workload_prority[PP_SMC_POWER_PROFILE_BOOTUP_DEFAULT];
-+
-+	if (smu->is_apu)
-+		smu->workload_mask = 1 << smu->workload_prority[PP_SMC_POWER_PROFILE_BOOTUP_DEFAULT];
-+	else
-+		smu->workload_mask = 1 << smu->workload_prority[PP_SMC_POWER_PROFILE_FULLSCREEN3D];
  
- 	smu->workload_setting[0] = PP_SMC_POWER_PROFILE_BOOTUP_DEFAULT;
- 	smu->workload_setting[1] = PP_SMC_POWER_PROFILE_FULLSCREEN3D;
+-	if (smu->is_apu)
++	if (smu->is_apu ||
++	    !smu_is_workload_profile_available(smu, PP_SMC_POWER_PROFILE_FULLSCREEN3D))
+ 		smu->workload_mask = 1 << smu->workload_prority[PP_SMC_POWER_PROFILE_BOOTUP_DEFAULT];
+ 	else
+ 		smu->workload_mask = 1 << smu->workload_prority[PP_SMC_POWER_PROFILE_FULLSCREEN3D];
