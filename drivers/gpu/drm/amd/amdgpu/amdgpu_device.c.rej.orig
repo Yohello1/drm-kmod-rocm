@@ -1,30 +1,11 @@
-@@ -5419,7 +5427,7 @@
- 	struct list_head *device_list_handle;
- 	bool full_reset, vram_lost = false;
- 	struct amdgpu_device *tmp_adev;
--	int r;
-+	int r, init_level;
+@@ -2582,8 +2585,9 @@
+ {
+ 	struct amdgpu_ip_block *ip_block;
+ 	struct pci_dev *parent;
++	bool total, skip_bios;
++	uint32_t bios_flags;
+ 	int i, r;
+-	bool total;
  
- 	device_list_handle = reset_context->reset_device_list;
+ 	amdgpu_device_enable_virtual_display(adev);
  
-@@ -5428,10 +5436,18 @@
- 
- 	full_reset = test_bit(AMDGPU_NEED_FULL_RESET, &reset_context->flags);
- 
-+	/**
-+	 * If it's reset on init, it's default init level, otherwise keep level
-+	 * as recovery level.
-+	 */
-+	if (reset_context->method == AMD_RESET_METHOD_ON_INIT)
-+			init_level = AMDGPU_INIT_LEVEL_DEFAULT;
-+	else
-+			init_level = AMDGPU_INIT_LEVEL_RESET_RECOVERY;
-+
- 	r = 0;
- 	list_for_each_entry(tmp_adev, device_list_handle, reset_list) {
--		/* After reset, it's default init level */
--		amdgpu_set_init_level(tmp_adev, AMDGPU_INIT_LEVEL_DEFAULT);
-+		amdgpu_set_init_level(tmp_adev, init_level);
- 		if (full_reset) {
- 			/* post card */
- 			amdgpu_ras_set_fed(tmp_adev, false);
