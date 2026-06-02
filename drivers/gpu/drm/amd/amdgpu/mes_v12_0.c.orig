@@ -24,7 +24,6 @@
 #include <linux/firmware.h>
 #include <linux/module.h>
 #include "amdgpu.h"
-#include "gfx_v12_0.h"
 #include "soc15_common.h"
 #include "soc21.h"
 #include "gc/gc_12_0_0_offset.h"
