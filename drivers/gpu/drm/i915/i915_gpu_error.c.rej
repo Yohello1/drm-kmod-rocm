@@ -1,0 +1,9 @@
+@@ -1113,7 +1113,7 @@
+ 	}
+ 
+ 	INIT_LIST_HEAD(&dst->page_list);
+-	strcpy(dst->name, name);
++	strscpy(dst->name, name);
+ 	dst->next = NULL;
+ 
+ 	dst->gtt_offset = vma_res->start;
