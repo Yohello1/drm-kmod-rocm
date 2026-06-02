@@ -1,13 +1,9 @@
-@@ -1492,10 +1492,10 @@
- 			(void **)&adev->gfx.rlc.rlc_autoload_ptr);
- }
+@@ -4126,7 +4126,7 @@
+ 	if (amdgpu_sriov_vf(adev))
+ 		return 0;
  
--static int gfx_v12_0_sw_fini(void *handle)
-+static int gfx_v12_0_sw_fini(struct amdgpu_ip_block *ip_block)
- {
- 	int i;
--	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
-+	struct amdgpu_device *adev = ip_block->adev;
- 
- 	for (i = 0; i < adev->gfx.num_gfx_rings; i++)
- 		amdgpu_ring_fini(&adev->gfx.gfx_ring[i]);
+-	switch (adev->ip_versions[GC_HWIP][0]) {
++	switch (amdgpu_ip_version(adev, GC_HWIP, 0)) {
+ 	case IP_VERSION(12, 0, 0):
+ 	case IP_VERSION(12, 0, 1):
+ 		gfx_v12_0_update_gfx_clock_gating(adev,
