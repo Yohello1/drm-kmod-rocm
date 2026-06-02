@@ -1,9 +1,8 @@
-@@ -1113,7 +1113,7 @@
- 	}
- 
- 	INIT_LIST_HEAD(&dst->page_list);
--	strcpy(dst->name, name);
-+	strscpy(dst->name, name);
- 	dst->next = NULL;
- 
- 	dst->gtt_offset = vma_res->start;
+@@ -841,7 +841,6 @@
+ 	err_printf(m, "Kernel: %s %s\n",
+ 		   init_utsname()->release,
+ 		   init_utsname()->machine);
+-	err_printf(m, "Driver: %s\n", DRIVER_DATE);
+ 	ts = ktime_to_timespec64(error->time);
+ 	err_printf(m, "Time: %lld s %ld us\n",
+ 		   (s64)ts.tv_sec, ts.tv_nsec / NSEC_PER_USEC);
