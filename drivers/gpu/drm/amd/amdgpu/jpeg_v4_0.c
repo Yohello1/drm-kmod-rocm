@@ -697,6 +697,26 @@ static int jpeg_v4_0_process_interrupt(struct amdgpu_device *adev,
 	return 0;
 }
 
+static int jpeg_v4_0_ring_reset(struct amdgpu_ring *ring, unsigned int vmid)
+{
+	if (amdgpu_sriov_vf(ring->adev))
+		return -EINVAL;
+
+	jpeg_v4_0_stop(ring->adev);
+	jpeg_v4_0_start(ring->adev);
+	return amdgpu_ring_test_helper(ring);
+}
+
+static int jpeg_v4_0_ring_reset(struct amdgpu_ring *ring, unsigned int vmid)
+{
+	if (amdgpu_sriov_vf(ring->adev))
+		return -EINVAL;
+
+	jpeg_v4_0_stop(ring->adev);
+	jpeg_v4_0_start(ring->adev);
+	return amdgpu_ring_test_helper(ring);
+}
+
 static const struct amd_ip_funcs jpeg_v4_0_ip_funcs = {
 	.name = "jpeg_v4_0",
 	.early_init = jpeg_v4_0_early_init,
@@ -740,6 +760,7 @@ static const struct amdgpu_ring_funcs jpeg_v4_0_dec_ring_vm_funcs = {
 	.emit_wreg = jpeg_v2_0_dec_ring_emit_wreg,
 	.emit_reg_wait = jpeg_v2_0_dec_ring_emit_reg_wait,
 	.emit_reg_write_reg_wait = amdgpu_ring_emit_reg_write_reg_wait_helper,
+	.reset = jpeg_v4_0_ring_reset,
 };
 
 static void jpeg_v4_0_set_dec_ring_funcs(struct amdgpu_device *adev)

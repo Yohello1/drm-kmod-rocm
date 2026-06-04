@@ -2595,6 +2595,8 @@ static int amdgpu_device_ip_early_init(struct amdgpu_device *adev)
 #endif
 	int i, r;
 	bool total;
+	uint32_t bios_flags;
+	bool skip_bios;
 
 	amdgpu_device_enable_virtual_display(adev);
 

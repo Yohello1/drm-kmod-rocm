@@ -67,8 +67,8 @@ EXPORT_SYMBOL_GPL(dma_fence_unwrap_next);
 
 static int fence_cmp(const void *_a, const void *_b)
 {
-	struct dma_fence *a = *(struct dma_fence **)_a;
-	struct dma_fence *b = *(struct dma_fence **)_b;
+	struct dma_fence *a = *(struct dma_fence * const *)_a;
+	struct dma_fence *b = *(struct dma_fence * const *)_b;
 
 	if (a->context < b->context)
 		return -1;

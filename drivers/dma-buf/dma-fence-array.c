@@ -29,6 +29,8 @@
 #include <linux/dma-fence-array.h>
 #include <linux/spinlock.h>
 
+#define PENDING_ERROR 1
+
 MALLOC_DECLARE(M_DMABUF);
 
 static const char *
@@ -36,6 +38,13 @@ dma_fence_array_get_driver_name(struct dma_fence *fence)
 {
 
 	return ("dma_fence_array");
+}
+
+static void dma_fence_array_clear_pending_error(struct dma_fence_array *array)
+{
+	    if (array->base.error == PENDING_ERROR) {
+	            array->base.error = 0;
+            }
 }
 
 static const char *

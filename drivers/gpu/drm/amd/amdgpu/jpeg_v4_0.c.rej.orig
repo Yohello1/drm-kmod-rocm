@@ -15,11 +15,3 @@
  }
  
  /**
-@@ -752,6 +758,7 @@
- 	.emit_wreg = jpeg_v2_0_dec_ring_emit_wreg,
- 	.emit_reg_wait = jpeg_v2_0_dec_ring_emit_reg_wait,
- 	.emit_reg_write_reg_wait = amdgpu_ring_emit_reg_write_reg_wait_helper,
-+	.reset = jpeg_v4_0_ring_reset,
- };
- 
- static void jpeg_v4_0_set_dec_ring_funcs(struct amdgpu_device *adev)
