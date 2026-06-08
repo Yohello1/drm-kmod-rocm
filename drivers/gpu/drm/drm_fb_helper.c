@@ -728,9 +728,6 @@ void drm_fb_helper_damage_area(struct fb_info *info, u32 x, u32 y, u32 width, u3
 EXPORT_SYMBOL(drm_fb_helper_damage_area);
 
 #ifdef __linux__
-// ifdef CONFIG_FB_DEFERRED_IO removed upstream
-// Does not compile, FreeBSD vm_page has no field lru
-
 #ifdef CONFIG_FB_DEFERRED_IO
 /**
  * drm_fb_helper_deferred_io() - fbdev deferred_io callback function
@@ -739,6 +736,8 @@ EXPORT_SYMBOL(drm_fb_helper_damage_area);
  *
  * This function is used as the &fb_deferred_io.deferred_io
  * callback function for flushing the fbdev mmap writes.
+ *
+ * Not compiled on FreeBSD: struct vm_page has no lru field.
  */
 void drm_fb_helper_deferred_io(struct fb_info *info, struct list_head *pagereflist)
 {
@@ -775,9 +774,8 @@ void drm_fb_helper_deferred_io(struct fb_info *info, struct list_head *pagerefli
 	}
 }
 EXPORT_SYMBOL(drm_fb_helper_deferred_io);
-#endif /* defined(__linux__) */
-
-#ifdef CONFIG_FB_DEFERRED_IO
+#endif /* CONFIG_FB_DEFERRED_IO */
+#endif /* __linux__ */
 /**
  * drm_fb_helper_set_suspend - wrapper around fb_set_suspend
  * @fb_helper: driver-allocated fbdev helper, can be NULL
