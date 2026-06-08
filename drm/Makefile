@@ -73,6 +73,8 @@ SRCS=	drm_atomic.c \
 	linux_fb.c \
 	vt_drmfb.c
 
+CFLAGS+= -include /root/dev/temp2/drm-kmod/amd/amdgpu/amdgpu_cleanup_shim.h
+
 # GPL-2.0.
 SRCS+=	drm_writeback.c
 

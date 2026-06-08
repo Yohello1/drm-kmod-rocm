@@ -289,7 +289,7 @@ int drm_dev_wedged_event(struct drm_device *dev, unsigned long method)
 	drm_info(dev, "device wedged, %s\n", method == DRM_WEDGE_RECOVERY_NONE ?
 		 "but recovered through reset" : "needs recovery");
 
-	return kobject_uevent_env(&dev->primary->kdev->kobj, KOBJ_CHANGE, envp);
+	return kobject_uevent_env(&dev->primary->kdev->kobj, KOBJ_CHANGE, envp), 0;
 }
 EXPORT_SYMBOL(drm_dev_wedged_event);
 

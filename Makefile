@@ -1,5 +1,8 @@
 # $FreeBSD$
 
+
+CFLAGS+= -include /root/dev/temp2/drm-kmod/amd/amdgpu/amdgpu_cleanup_shim.h
+
 SYSDIR?=/usr/src/sys
 .include "${SYSDIR}/conf/kern.opts.mk"
 

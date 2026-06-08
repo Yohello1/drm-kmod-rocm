@@ -559,7 +559,7 @@ static int drm_validate_value_string(const char *value, size_t len)
 	int i;
 
 	for (i = 0; i < len; i++) {
-		if (!isascii(value[i]) || !isgraph(value[i]))
+		if (!isascii(value[i]) || (value[i] <= 32 || value[i] >= 127))	
 			return -EINVAL;
 	}
 	return 0;

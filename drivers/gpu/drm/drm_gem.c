@@ -139,8 +139,7 @@ int drm_gem_object_init_with_mnt(struct drm_device *dev,
 	drm_gem_private_object_init(dev, obj, size);
 
 	if (gemfs)
-		filp = shmem_file_setup_with_mnt(gemfs, "drm mm object", size,
-						 VM_NORESERVE);
+		filp = shmem_file_setup("drm mm object", size, VM_NORESERVE); 
 	else
 		filp = shmem_file_setup("drm mm object", size, VM_NORESERVE);
 

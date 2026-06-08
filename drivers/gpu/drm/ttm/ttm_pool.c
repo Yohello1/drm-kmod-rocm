@@ -426,36 +426,49 @@ static unsigned int ttm_pool_page_order(struct ttm_pool *pool, struct page *p)
  * is no private field in `struct vm_page` to put ttm_pool data. */
 #endif
 
-/* Called when we got a page, either from a pool or newly allocated */
+/*
+ * Called when we got a page, either from a pool or newly allocated.
+ * if needed, dma map the page and populate the dma address array.
+ * Populate the page address array.
+ * If the caching is consistent, update any deferred caching. Otherwise
+ * stage this page for an upcoming deferred caching update.
+ */
 static int ttm_pool_page_allocated(struct ttm_pool *pool, unsigned int order,
-				   struct page *p, dma_addr_t **dma_addr,
-				   unsigned long *num_pages,
-#if defined(__linux__) || defined(PAGE_IS_LKPI_PAGE)
-				   struct page ***pages)
-#elif defined(__FreeBSD__)
-				   struct page ***pages,
-				   unsigned int **orders)
+				   struct page *p, enum ttm_caching page_caching,
+				   struct ttm_pool_alloc_state *alloc
+#ifdef __FreeBSD__
+				   , unsigned int **orders
 #endif
+				   )
 {
-	unsigned int i;
-	int r;
+	pgoff_t i, nr = 1UL << order;
+	bool caching_consistent;
+	int r = 0;
 
-	if (*dma_addr) {
-		r = ttm_pool_map(pool, order, p, dma_addr);
+	caching_consistent = (page_caching == alloc->tt_caching) || PageHighMem(p);
+
+	if (caching_consistent) {
+		r = ttm_pool_apply_caching(alloc);
 		if (r)
 			return r;
 	}
 
-	*num_pages -= 1 << order;
-#if defined(__linux__) || defined(PAGE_IS_LKPI_PAGE)
-	for (i = 1 << order; i; --i, ++(*pages), ++p)
-		**pages = p;
-#elif defined(__FreeBSD__)
-	for (i = 1 << order; i; --i, ++(*pages), ++(*orders), ++p) {
-		**pages = p;
-		**orders = order;
+	if (alloc->dma_addr) {
+		r = ttm_pool_map(pool, order, p, &alloc->dma_addr);
+		if (r)
+			return r;
 	}
+
+	alloc->remaining_pages -= nr;
+	for (i = 0; i < nr; ++i) {
+		*alloc->pages++ = p++;
+#ifdef __FreeBSD__
+		*(*orders)++ = order;
 #endif
+	}
+
+	if (caching_consistent)
+		alloc->caching_divide = alloc->pages;
 
 	return 0;
 }
@@ -536,10 +549,7 @@ static unsigned int ttm_pool_alloc_find_order(unsigned int highest,
 int ttm_pool_alloc(struct ttm_pool *pool, struct ttm_tt *tt,
 		   struct ttm_operation_ctx *ctx)
 {
-	pgoff_t num_pages = tt->num_pages;
-	dma_addr_t *dma_addr = tt->dma_address;
-	struct page **caching = tt->pages;
-	struct page **pages = tt->pages;
+	struct ttm_pool_alloc_state alloc;
 #if defined(__FreeBSD__) && !defined(PAGE_IS_LKPI_PAGE)
 	unsigned int *orders = tt->orders;
 #endif
@@ -547,11 +557,14 @@ int ttm_pool_alloc(struct ttm_pool *pool, struct ttm_tt *tt,
 	gfp_t gfp_flags = GFP_USER;
 	pgoff_t caching_divide;
 	unsigned int order;
+	bool allow_pools;
 	struct page *p;
 	int r;
 
-	WARN_ON(!num_pages || ttm_tt_is_populated(tt));
-	WARN_ON(dma_addr && !pool->dev);
+	ttm_pool_alloc_state_init(tt, &alloc);
+
+	WARN_ON(!alloc.remaining_pages || ttm_tt_is_populated(tt));
+	WARN_ON(alloc.dma_addr && !pool->dev);
 
 	if (tt->page_flags & TTM_TT_FLAG_ZERO_ALLOC)
 		gfp_flags |= __GFP_ZERO;
@@ -564,80 +577,50 @@ int ttm_pool_alloc(struct ttm_pool *pool, struct ttm_tt *tt,
 	else
 		gfp_flags |= GFP_HIGHUSER;
 
-	for (order = min_t(unsigned int, MAX_PAGE_ORDER, __fls(num_pages));
-	     num_pages;
-	     order = min_t(unsigned int, order, __fls(num_pages))) {
+	page_caching = tt->caching;
+	allow_pools = true;
+	for (order = ttm_pool_alloc_find_order(MAX_PAGE_ORDER, &alloc);
+	     alloc.remaining_pages;
+	     order = ttm_pool_alloc_find_order(order, &alloc)) {
 		struct ttm_pool_type *pt;
 
-		page_caching = tt->caching;
-		pt = ttm_pool_select_type(pool, tt->caching, order);
-		p = pt ? ttm_pool_type_take(pt) : NULL;
-		if (p) {
-			r = ttm_pool_apply_caching(caching, pages,
-						   tt->caching);
-			if (r)
-				goto error_free_page;
-
-			caching = pages;
-			do {
-#if defined(__linux__) || defined(PAGE_IS_LKPI_PAGE)
-				r = ttm_pool_page_allocated(pool, order, p,
-							    &dma_addr,
-							    &num_pages,
-							    &pages);
-#elif defined(__FreeBSD__)
-				r = ttm_pool_page_allocated(pool, order, p,
-							    &dma_addr,
-							    &num_pages,
-							    &pages,
-							    &orders);
-#endif
-				if (r)
-					goto error_free_page;
-
-				caching = pages;
-				if (num_pages < (1 << order))
-					break;
-
-				p = ttm_pool_type_take(pt);
-			} while (p);
+		/* First, try to allocate a page from a pool if one exists. */
+		p = NULL;
+		pt = ttm_pool_select_type(pool, page_caching, order);
+		if (pt && allow_pools)
+			p = ttm_pool_type_take(pt);
+		/*
+		 * If that fails or previously failed, allocate from system.
+		 * Note that this also disallows additional pool allocations using
+		 * write-back cached pools of the same order. Consider removing
+		 * that behaviour.
+		 */
+		if (!p) {
+			page_caching = ttm_cached;
+			allow_pools = false;
+			p = ttm_pool_alloc_page(pool, gfp_flags, order);
 		}
-
-		page_caching = ttm_cached;
-		while (num_pages >= (1 << order) &&
-		       (p = ttm_pool_alloc_page(pool, gfp_flags, order))) {
-
-			if (PageHighMem(p)) {
-				r = ttm_pool_apply_caching(caching, pages,
-							   tt->caching);
-				if (r)
-					goto error_free_page;
-				caching = pages;
-			}
-#if defined(__linux__) || defined(PAGE_IS_LKPI_PAGE)
-			r = ttm_pool_page_allocated(pool, order, p, &dma_addr,
-						    &num_pages, &pages);
-#elif defined(__FreeBSD__)
-			r = ttm_pool_page_allocated(pool, order, p, &dma_addr,
-						    &num_pages, &pages, &orders);
-#endif
-			if (r)
-				goto error_free_page;
-			if (PageHighMem(p))
-				caching = pages;
-		}
-
+		/* If that fails, lower the order if possible and retry. */
 		if (!p) {
 			if (order) {
 				--order;
+				page_caching = tt->caching;
+				allow_pools = true;
 				continue;
 			}
 			r = -ENOMEM;
 			goto error_free_all;
 		}
+		r = ttm_pool_page_allocated(pool, order, p, page_caching, &alloc
+#if defined(__FreeBSD__) && !defined(PAGE_IS_LKPI_PAGE)
+					    , &orders
+#endif
+					    );
+		if (r)
+			goto error_free_page;
 	}
 
-	r = ttm_pool_apply_caching(caching, pages, tt->caching);
+	r = ttm_pool_apply_caching(&alloc);
 	if (r)
 		goto error_free_all;
 

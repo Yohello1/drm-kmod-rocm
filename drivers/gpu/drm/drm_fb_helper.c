@@ -27,6 +27,7 @@
  *      Dave Airlie <airlied@linux.ie>
  *      Jesse Barnes <jesse.barnes@intel.com>
  */
+#undef pr_fmt
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/console.h>
@@ -176,7 +177,7 @@ int drm_fb_helper_debug_enter(struct fb_info *info)
 	return 0;
 }
 EXPORT_SYMBOL(drm_fb_helper_debug_enter);
-#endif
+
 
 /**
  * drm_fb_helper_debug_leave - implementation for &fb_ops.fb_debug_leave
