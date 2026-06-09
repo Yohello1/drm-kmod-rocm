@@ -197,9 +197,6 @@ SRCS+=	amdgpu_aca.c \
 	si_ih.c \
 	si_smc.c \
 	soc15.c \
-	soc21.c \
-	soc24.c \
-	smuio_v13_0.c \
 	smuio_v13_0_3.c \
 	smuio_v13_0_6.c \
 	smuio_v14_0_2.c \
@@ -225,10 +222,38 @@ SRCS+=	amdgpu_ioc32.c
 # amdxcp
 SRCS+=	amdgpu_xcp_drv.c
 
+SRCS+= nbio_v2_3.c \
+       nbio_v4_3.c \
+       nbio_v6_1.c \
+       nbio_v7_2.c \
+       nbio_v7_4.c \
+       nbio_v7_7.c \
+       nbio_v7_0.c
+SRCS+=  hdp_v4_0.c \
+        hdp_v5_0.c \
+        hdp_v5_2.c \
+        hdp_v6_0.c
+SRCS+=  df_v1_7.c \
+        df_v3_6.c \
+        df_v4_3.c \
+	df_v4_6_2.c 
+SRCS+=  smuio_v9_0.c \
+	smuio_v11_0.c \
+        smuio_v11_0_6.c \
+        smuio_v13_0.c
+SRCS+=  nv.c
+SRCS+=  soc21.c \
+        soc24.c
+SRCS+=  gmc_v9_0.c \
+        gmc_v10_0.c 
+SRCS+=  navi10_ih.c \
+        vega10_ih.c \
+        vega20_ih.c
 
 # Debug files, not handled for now
-SRCS_DEBUG=	amdgpu_dm_crc.c \
-		amdgpu_dm_debugfs.c
+SRCS+=	amdgpu_dm_crc.c \
+	amdgpu_dm_debugfs.c
+SRCS+=  amdgpu_dm.c 
 
 .if !empty(KCONFIG:MACPI*)
 SRCS+=	amdgpu_acpi.c

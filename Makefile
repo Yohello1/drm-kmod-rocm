@@ -6,7 +6,7 @@ CFLAGS+= -include /root/dev/temp2/drm-kmod/amd/amdgpu/amdgpu_cleanup_shim.h
 SYSDIR?=/usr/src/sys
 .include "${SYSDIR}/conf/kern.opts.mk"
 
-_VALID_KMODS=	dmabuf ttm drm dummygfx i915 amd radeon linuxkpi_video
+_VALID_KMODS=	dmabuf ttm drm dummygfx amd radeon linuxkpi_video
 
 SUPPORTED_ARCH=	amd64 \
 		i386 \
@@ -25,10 +25,6 @@ DEFAULT_KMODS=	dmabuf		\
 		drm		\
 		amd		\
 		radeon
-
-.if ${MACHINE_ARCH} == "amd64" || ${MACHINE_ARCH} == "i386"
-DEFAULT_KMODS+=	i915
-.endif
 
 .if defined(DUMMYGFX)
 _dummygfx = dummygfx

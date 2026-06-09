@@ -2444,7 +2444,7 @@ static void amdgpu_discovery_init_soc_config(struct amdgpu_device *adev)
 	switch (amdgpu_ip_version(adev, GC_HWIP, 0)) {
 	case IP_VERSION(9, 4, 3):
 	case IP_VERSION(9, 4, 4):
-		aqua_vanjaram_init_soc_config(adev);
+		// aqua_vanjaram_init_soc_config(adev);
 		break;
 	default:
 		break;

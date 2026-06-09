@@ -2614,7 +2614,7 @@ static int amdgpu_device_ip_early_init(struct amdgpu_device *adev)
 	case CHIP_OLAND:
 	case CHIP_HAINAN:
 		adev->family = AMDGPU_FAMILY_SI;
-		r = si_set_ip_blocks(adev);
+		// r = si_set_ip_blocks(adev);
 		if (r)
 			return r;
 		break;
@@ -2630,7 +2630,7 @@ static int amdgpu_device_ip_early_init(struct amdgpu_device *adev)
 		else
 			adev->family = AMDGPU_FAMILY_CI;
 
-		r = cik_set_ip_blocks(adev);
+		// r = cik_set_ip_blocks(adev);
 		if (r)
 			return r;
 		break;
@@ -2649,7 +2649,7 @@ static int amdgpu_device_ip_early_init(struct amdgpu_device *adev)
 		else
 			adev->family = AMDGPU_FAMILY_VI;
 
-		r = vi_set_ip_blocks(adev);
+		// r = vi_set_ip_blocks(adev);
 		if (r)
 			return r;
 		break;

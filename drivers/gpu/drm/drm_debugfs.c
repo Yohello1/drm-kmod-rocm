@@ -102,7 +102,7 @@ static int drm_clients_info(struct seq_file *m, void *data)
 #elif defined(__FreeBSD__)
 		pid_t pid;
 #endif
-		mutex_lock(&prev->client_name_lock);
+		mutex_lock(&priv->client_name_lock);
 		rcu_read_lock(); /* Locks priv->pid and pid_task()->comm! */
 #ifdef __linux__
 		pid = rcu_dereference(priv->pid);
