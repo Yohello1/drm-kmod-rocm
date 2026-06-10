@@ -215,7 +215,6 @@ int amdgpu_dm_crtc_configure_crc_source(struct drm_crtc *crtc,
 {
 	struct amdgpu_device *adev = drm_to_adev(crtc->dev);
 	struct dc_stream_state *stream_state = dm_crtc_state->stream;
-	bool enable = amdgpu_dm_is_valid_crc_source(source);
 	int ret = 0;
 
 	/* Configuration will be deferred to stream enable. */
@@ -226,8 +225,8 @@ int amdgpu_dm_crtc_configure_crc_source(struct drm_crtc *crtc,
 
 	/* Enable or disable CRTC CRC generation */
 	if (dm_is_crc_source_crtc(source) || source == AMDGPU_DM_PIPE_CRC_SOURCE_NONE) {
-		if (!dc_stream_configure_crc(stream_state->ctx->dc,
-					     stream_state, NULL, enable, enable)) {
+		if (false
+		) {
 			ret = -EINVAL;
 			goto unlock;
 		}

@@ -777,7 +777,7 @@ void amdgpu_detect_virtualization(struct amdgpu_device *adev)
 		switch (adev->asic_type) {
 		case CHIP_TONGA:
 		case CHIP_FIJI:
-			vi_set_virt_ops(adev);
+			// vi_set_virt_ops(adev);
 			break;
 		case CHIP_VEGA10:
 			soc15_set_virt_ops(adev);

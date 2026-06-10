@@ -2070,7 +2070,7 @@ int amdgpu_debugfs_init(struct amdgpu_device *adev)
 
 #if defined(CONFIG_DRM_AMD_DC)
 	if (adev->dc_enabled)
-		dtn_debugfs_init(adev);
+		// dtn_debugfs_init(adev);
 #endif
 
 	for (i = 0; i < AMDGPU_MAX_RINGS; ++i) {

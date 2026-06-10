@@ -605,10 +605,10 @@ static void gmc_v10_0_set_mmhub_funcs(struct amdgpu_device *adev)
 	case IP_VERSION(2, 3, 0):
 	case IP_VERSION(2, 4, 0):
 	case IP_VERSION(2, 4, 1):
-		adev->mmhub.funcs = &mmhub_v2_3_funcs;
+		// adev->mmhub.funcs = &mmhub_v2_3_funcs;
 		break;
 	default:
-		adev->mmhub.funcs = &mmhub_v2_0_funcs;
+		// adev->mmhub.funcs = &mmhub_v2_0_funcs;
 		break;
 	}
 }

@@ -145,6 +145,7 @@ SRCS+=	amdgpu_aca.c \
 	amdgpu_xcp.c \
 	amdgpu_xgmi.c \
 	arct_reg_init.c \
+	athub_v3_0.c \
 	athub_v4_1_0.c \
 	atom.c \
 	atombios_crtc.c \
@@ -157,6 +158,8 @@ SRCS+=	amdgpu_aca.c \
 	gfx_v11_0.c \
 	gfx_v11_0_3.c \
 	gfx_v12_0.c \
+	gfxhub_v3_0.c \
+	gfxhub_v3_0_3.c \
 	gfxhub_v11_5_0.c \
 	gfxhub_v12_0.c \
 	gmc_v11_0.c \
@@ -181,6 +184,9 @@ SRCS+=	amdgpu_aca.c \
 	mca_v3_0.c \
 	mes_v11_0.c \
 	mes_v12_0.c \
+	mmhub_v3_0_1.c \
+	mmhub_v3_0.c \
+	mmhub_v3_0_2.c \
 	mmhub_v4_1_0.c \
 	mmhub_v3_3.c \
 	mmhub_v9_4.c \
@@ -246,17 +252,10 @@ SRCS+=  smuio_v9_0.c \
 SRCS+=  nv.c
 SRCS+=  soc21.c \
         soc24.c
-SRCS+=  gmc_v9_0.c \
-        gmc_v10_0.c 
 SRCS+=  navi10_ih.c \
         vega10_ih.c \
-        vega20_ih.c
-
-# Debug files, not handled for now
-SRCS+=	amdgpu_dm_crc.c \
-	amdgpu_dm_debugfs.c
-SRCS+=  amdgpu_dm.c 
-
+        vega20_ih.c 
+SRCS+= aldebaran.c
 .if !empty(KCONFIG:MACPI*)
 SRCS+=	amdgpu_acpi.c
 .else

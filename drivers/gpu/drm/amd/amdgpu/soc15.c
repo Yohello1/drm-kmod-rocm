@@ -889,7 +889,7 @@ static uint64_t soc15_get_pcie_replay_count(struct amdgpu_device *adev)
 
 static void soc15_pre_asic_init(struct amdgpu_device *adev)
 {
-	gmc_v9_0_restore_registers(adev);
+	// gmc_v9_0_restore_registers(adev);
 }
 
 static const struct amdgpu_asic_funcs soc15_asic_funcs =
@@ -952,7 +952,7 @@ static const struct amdgpu_asic_funcs aqua_vanjaram_asic_funcs =
 	.supports_baco = &soc15_supports_baco,
 	.pre_asic_init = &soc15_pre_asic_init,
 	.query_video_codecs = &soc15_query_video_codecs,
-	.encode_ext_smn_addressing = &aqua_vanjaram_encode_ext_smn_addressing,
+	.encode_ext_smn_addressing = NULL, 
 	.get_reg_state = &aqua_vanjaram_get_reg_state,
 };
 

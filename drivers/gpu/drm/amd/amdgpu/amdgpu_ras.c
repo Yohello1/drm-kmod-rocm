@@ -5084,12 +5084,13 @@ static void amdgpu_ras_boot_time_error_reporting(struct amdgpu_device *adev,
 	 * the one for aqua_vanjaram. We should revisit the code if the pattern
 	 * is changed. In such case, replace the aqua_vanjaram implementation
 	 * with more common helper */
-	reg_addr = (mmMP0_SMN_C2PMSG_92 << 2) +
-		   aqua_vanjaram_encode_ext_smn_addressing(instance);
+	reg_addr = (mmMP0_SMN_C2PMSG_92 << 2); 
+		   // aqua_vanjaram_encode_ext_smn_addressing(instance);
 	fw_status = amdgpu_device_indirect_rreg_ext(adev, reg_addr);
 
-	reg_addr = (mmMP0_SMN_C2PMSG_126 << 2) +
-		   aqua_vanjaram_encode_ext_smn_addressing(instance);
+	reg_addr = (mmMP0_SMN_C2PMSG_126 << 2); 
+		   // aqua_vanjaram_encode_ext_smn_addressing(instance);
+
 	boot_error = amdgpu_device_indirect_rreg_ext(adev, reg_addr);
 
 	socket_id = AMDGPU_RAS_GPU_ERR_SOCKET_ID(boot_error);
@@ -5154,8 +5155,8 @@ static bool amdgpu_ras_boot_error_detected(struct amdgpu_device *adev,
 	u32 reg_data;
 	int retry_loop;
 
-	reg_addr = (mmMP0_SMN_C2PMSG_92 << 2) +
-		   aqua_vanjaram_encode_ext_smn_addressing(instance);
+	reg_addr = (mmMP0_SMN_C2PMSG_92 << 2); 
+	//	   aqua_vanjaram_encode_ext_smn_addressing(instance);
 
 	for (retry_loop = 0; retry_loop < AMDGPU_RAS_BOOT_STATUS_POLLING_LIMIT; retry_loop++) {
 		reg_data = amdgpu_device_indirect_rreg_ext(adev, reg_addr);

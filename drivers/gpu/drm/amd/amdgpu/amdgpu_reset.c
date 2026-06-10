@@ -184,13 +184,13 @@ int amdgpu_reset_init(struct amdgpu_device *adev)
 	case IP_VERSION(13, 0, 2):
 	case IP_VERSION(13, 0, 6):
 	case IP_VERSION(13, 0, 14):
-		ret = aldebaran_reset_init(adev);
+		// ret = aldebaran_reset_init(adev);
 		break;
 	case IP_VERSION(11, 0, 7):
-		ret = sienna_cichlid_reset_init(adev);
+		// ret = sienna_cichlid_reset_init(adev);
 		break;
 	case IP_VERSION(13, 0, 10):
-		ret = smu_v13_0_10_reset_init(adev);
+		// ret = smu_v13_0_10_reset_init(adev);
 		break;
 	default:
 		break;
@@ -207,13 +207,13 @@ int amdgpu_reset_fini(struct amdgpu_device *adev)
 	case IP_VERSION(13, 0, 2):
 	case IP_VERSION(13, 0, 6):
 	case IP_VERSION(13, 0, 14):
-		ret = aldebaran_reset_fini(adev);
+		// ret = aldebaran_reset_fini(adev);
 		break;
 	case IP_VERSION(11, 0, 7):
-		ret = sienna_cichlid_reset_fini(adev);
+		// ret = sienna_cichlid_reset_fini(adev);
 		break;
 	case IP_VERSION(13, 0, 10):
-		ret = smu_v13_0_10_reset_fini(adev);
+		// ret = smu_v13_0_10_reset_fini(adev);
 		break;
 	default:
 		break;
