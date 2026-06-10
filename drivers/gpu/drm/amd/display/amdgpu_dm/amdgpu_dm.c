@@ -45,6 +45,10 @@
 #include "link/protocols/link_dp_capability.h"
 #include "link/protocols/link_ddc.h"
 
+#ifndef DC_DISABLE_SUBVP
+#define DC_DISABLE_SUBVP (1ULL << 13)
+#endif
+
 #include "vid.h"
 #include "amdgpu.h"
 #include "amdgpu_display.h"
@@ -320,18 +324,18 @@ static bool dm_is_idle(void *handle)
 	return true;
 }
 
-static int dm_wait_for_idle(struct amdgpu_ip_block *ip_block)
+static int dm_wait_for_idle(void *handle)
 {
 	/* XXX todo */
 	return 0;
 }
 
-static bool dm_check_soft_reset(struct amdgpu_ip_block *ip_block)
+static bool dm_check_soft_reset(void *handle)
 {
 	return false;
 }
 
-static int dm_soft_reset(struct amdgpu_ip_block *ip_block)
+static int dm_soft_reset(void *handle)
 {
 	/* XXX todo */
 	return 0;
@@ -955,20 +959,20 @@ static void dm_dmub_outbox1_low_irq(void *interrupt_params)
 	}
 }
 
-static int dm_set_clockgating_state(struct amdgpu_ip_block *ip_block,
+static int dm_set_clockgating_state(void *handle,
 		  enum amd_clockgating_state state)
 {
 	return 0;
 }
 
-static int dm_set_powergating_state(struct amdgpu_ip_block *ip_block,
+static int dm_set_powergating_state(void *handle,
 		  enum amd_powergating_state state)
 {
 	return 0;
 }
 
 /* Prototypes of private functions */
-static int dm_early_init(struct amdgpu_ip_block *ip_block);
+static int dm_early_init(void *handle);
 
 /* Allocate memory for FBC compressed data  */
 static void amdgpu_dm_fbc_init(struct drm_connector *connector)
@@ -1826,7 +1830,7 @@ static enum dmub_ips_disable_type dm_get_default_ips_mode(
 
 static int amdgpu_dm_init(struct amdgpu_device *adev)
 {
-	struct dc_init_data init_data;
+	return 0; struct dc_init_data init_data;
 	struct dc_callback_init init_params;
 	int r;
 
@@ -1989,9 +1993,6 @@ static int amdgpu_dm_init(struct amdgpu_device *adev)
 	if (amdgpu_dc_debug_mask & DC_FORCE_SUBVP_MCLK_SWITCH)
 		adev->dm.dc->debug.force_subvp_mclk_switch = true;
 
-	if (amdgpu_dc_debug_mask & DC_DISABLE_SUBVP)
-		adev->dm.dc->debug.force_disable_subvp = true;
-
 	if (amdgpu_dc_debug_mask & DC_ENABLE_DML2) {
 		adev->dm.dc->debug.using_dml2 = true;
 		adev->dm.dc->debug.using_dml21 = true;
@@ -2128,9 +2129,9 @@ error:
 	return -EINVAL;
 }
 
-static int amdgpu_dm_early_fini(struct amdgpu_ip_block *ip_block)
+static int amdgpu_dm_early_fini(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
 
 	amdgpu_dm_audio_fini(adev);
 
@@ -2228,6 +2229,8 @@ static void amdgpu_dm_fini(struct amdgpu_device *adev)
 
 static int load_dmcu_fw(struct amdgpu_device *adev)
 {
+	return 0;
+
 	const char *fw_name_dmcu = NULL;
 	int r;
 	const struct dmcu_firmware_header_v1_0 *hdr;
@@ -2300,8 +2303,7 @@ static int load_dmcu_fw(struct amdgpu_device *adev)
 		return 0;
 	}
 
-	r = amdgpu_ucode_request(adev, &adev->dm.fw_dmcu, AMDGPU_UCODE_REQUIRED,
-				 "%s", fw_name_dmcu);
+	r = amdgpu_ucode_request(adev, &adev->dm.fw_dmcu, 0, "%s", fw_name_dmcu);
 	if (r == -ENODEV) {
 		/* DMCU firmware is not necessary, so don't raise a fuss if it's missing */
 		DRM_DEBUG_KMS("dm: DMCU firmware not found\n");
@@ -2523,9 +2525,9 @@ static int dm_dmub_sw_init(struct amdgpu_device *adev)
 	return 0;
 }
 
-static int dm_sw_init(struct amdgpu_ip_block *ip_block)
+static int dm_sw_init(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
 	int r;
 
 	adev->dm.cgs_device = amdgpu_cgs_create_device(adev);
@@ -2545,9 +2547,9 @@ static int dm_sw_init(struct amdgpu_ip_block *ip_block)
 	return load_dmcu_fw(adev);
 }
 
-static int dm_sw_fini(struct amdgpu_ip_block *ip_block)
+static int dm_sw_fini(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
 	struct dal_allocation *da;
 
 	list_for_each_entry(da, &adev->dm.da_list, list) {
@@ -2612,9 +2614,9 @@ static int detect_mst_link_for_all_connectors(struct drm_device *dev)
 	return ret;
 }
 
-static int dm_late_init(struct amdgpu_ip_block *ip_block)
+static int dm_late_init(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
 
 	struct dmcu_iram_parameters params;
 	unsigned int linear_lut[16];
@@ -2822,9 +2824,9 @@ static int amdgpu_dm_smu_write_watermarks_table(struct amdgpu_device *adev)
  * - Vblank support
  * - Debug FS entries, if enabled
  */
-static int dm_hw_init(struct amdgpu_ip_block *ip_block)
+static int dm_hw_init(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
 	int r;
 
 	/* Create DAL display manager */
@@ -2844,9 +2846,9 @@ static int dm_hw_init(struct amdgpu_ip_block *ip_block)
  * cleanup. This involves cleaning up the DRM device, DC, and any modules that
  * were loaded. Also flush IRQ workqueues and disable them.
  */
-static int dm_hw_fini(struct amdgpu_ip_block *ip_block)
+static int dm_hw_fini(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
 
 	amdgpu_dm_hpd_fini(adev);
 
@@ -2950,9 +2952,9 @@ static void hpd_rx_irq_work_suspend(struct amdgpu_display_manager *dm)
 	}
 }
 
-static int dm_suspend(struct amdgpu_ip_block *ip_block)
+static int dm_suspend(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = handle;
 	struct amdgpu_display_manager *dm = &adev->dm;
 	int ret = 0;
 
@@ -3139,9 +3141,9 @@ cleanup:
 	kfree(bundle);
 }
 
-static int dm_resume(struct amdgpu_ip_block *ip_block)
+static int dm_resume(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = handle;
 	struct drm_device *ddev = adev_to_drm(adev);
 	struct amdgpu_display_manager *dm = &adev->dm;
 	struct amdgpu_dm_connector *aconnector;
@@ -3377,22 +3379,22 @@ static int dm_resume(struct amdgpu_ip_block *ip_block)
  */
 
 static const struct amd_ip_funcs amdgpu_dm_funcs = {
-	.name = "dm",
-	.early_init = dm_early_init,
-	.late_init = dm_late_init,
-	.sw_init = dm_sw_init,
-	.sw_fini = dm_sw_fini,
-	.early_fini = amdgpu_dm_early_fini,
-	.hw_init = dm_hw_init,
-	.hw_fini = dm_hw_fini,
-	.suspend = dm_suspend,
-	.resume = dm_resume,
-	.is_idle = dm_is_idle,
-	.wait_for_idle = dm_wait_for_idle,
-	.check_soft_reset = dm_check_soft_reset,
-	.soft_reset = dm_soft_reset,
-	.set_clockgating_state = dm_set_clockgating_state,
-	.set_powergating_state = dm_set_powergating_state,
+    .name = "amdgpu_dm",
+    .early_init = NULL,
+    .late_init = NULL,
+    .sw_init = NULL,
+    .sw_fini = NULL,
+    .early_fini = NULL,
+    .hw_init = NULL,
+    .hw_fini = NULL,
+    .suspend = NULL,
+    .resume = NULL,
+    .is_idle = NULL,
+    .wait_for_idle = NULL,
+    .check_soft_reset = NULL,
+    .soft_reset = NULL,
+    .set_clockgating_state = NULL,
+    .set_powergating_state = NULL,
 };
 
 const struct amdgpu_ip_block_version dm_ip_block = {
@@ -5193,20 +5195,15 @@ static ssize_t s3_debug_store(struct device *device,
 	int s3_state;
 	struct drm_device *drm_dev = dev_get_drvdata(device);
 	struct amdgpu_device *adev = drm_to_adev(drm_dev);
-	struct amdgpu_ip_block *ip_block;
-
-	ip_block = amdgpu_device_ip_get_ip_block(adev, AMD_IP_BLOCK_TYPE_DCE);
-	if (!ip_block)
-		return -EINVAL;
 
 	ret = kstrtoint(buf, 0, &s3_state);
 
 	if (ret == 0) {
 		if (s3_state) {
-			dm_resume(ip_block);
+			dm_resume(adev);
 			drm_kms_helper_hotplug_event(adev_to_drm(adev));
 		} else
-			dm_suspend(ip_block);
+			dm_suspend(adev);
 	}
 
 	return ret == 0 ? count : 0;
@@ -5219,7 +5216,7 @@ DEVICE_ATTR_WO(s3_debug);
 static int dm_init_microcode(struct amdgpu_device *adev)
 {
 	char *fw_name_dmub;
-	int r;
+	int r = 0;
 
 	switch (amdgpu_ip_version(adev, DCE_HWIP, 0)) {
 	case IP_VERSION(2, 1, 0):
@@ -5274,14 +5271,13 @@ static int dm_init_microcode(struct amdgpu_device *adev)
 		/* ASIC doesn't support DMUB. */
 		return 0;
 	}
-	r = amdgpu_ucode_request(adev, &adev->dm.dmub_fw, AMDGPU_UCODE_REQUIRED,
-				 "%s", fw_name_dmub);
+	amdgpu_ucode_request(adev, &adev->dm.dmub_fw, 0, "%s", fw_name_dmub);
 	return r;
 }
 
-static int dm_early_init(struct amdgpu_ip_block *ip_block)
+static int dm_early_init(void *handle)
 {
-	struct amdgpu_device *adev = ip_block->adev;
+	struct amdgpu_device *adev = (struct amdgpu_device *)handle;
 	struct amdgpu_mode_info *mode_info = &adev->mode_info;
 	struct atom_context *ctx = mode_info->atom_context;
 	int index = GetIndexIntoMasterTable(DATA, Object_Header);

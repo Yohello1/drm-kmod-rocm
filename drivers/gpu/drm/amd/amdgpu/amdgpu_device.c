@@ -7065,3 +7065,7 @@ ssize_t amdgpu_show_reset_mask(char *buf, uint32_t supported_reset)
 	size += sysfs_emit_at(buf, size, "\n");
 	return size;
 }
+
+
+
+

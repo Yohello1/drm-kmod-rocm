@@ -1,6 +1,8 @@
 # `kconfig.mk` defines variables used to conditionally add files to $(SRCS).
 .include "../../kconfig.mk"
 
+
+
 SRCDIR=	${.CURDIR:H:H}/drivers/gpu/drm/amd
 DRM= ${.CURDIR:H:H}/drivers/gpu/drm
 
