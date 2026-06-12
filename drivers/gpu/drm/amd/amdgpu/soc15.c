@@ -946,14 +946,14 @@ static const struct amdgpu_asic_funcs aqua_vanjaram_asic_funcs =
 	.set_vce_clocks = &soc15_set_vce_clocks,
 	.get_config_memsize = &soc15_get_config_memsize,
 	.need_full_reset = &soc15_need_full_reset,
-	.init_doorbell_index = &aqua_vanjaram_doorbell_index_init,
+	.init_doorbell_index = NULL, /* Cleared */
 	.need_reset_on_init = &soc15_need_reset_on_init,
 	.get_pcie_replay_count = &amdgpu_nbio_get_pcie_replay_count,
 	.supports_baco = &soc15_supports_baco,
 	.pre_asic_init = &soc15_pre_asic_init,
 	.query_video_codecs = &soc15_query_video_codecs,
-	.encode_ext_smn_addressing = NULL, 
-	.get_reg_state = &aqua_vanjaram_get_reg_state,
+	.encode_ext_smn_addressing = NULL,
+	.get_reg_state = NULL, /* Cleared preemptively */
 };
 
 static int soc15_common_early_init(struct amdgpu_ip_block *ip_block)

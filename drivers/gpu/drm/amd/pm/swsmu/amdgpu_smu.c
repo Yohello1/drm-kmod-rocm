@@ -679,74 +679,10 @@ static int smu_set_funcs(struct amdgpu_device *adev)
 		smu->od_enabled = true;
 
 	switch (amdgpu_ip_version(adev, MP1_HWIP, 0)) {
-	case IP_VERSION(11, 0, 0):
-	case IP_VERSION(11, 0, 5):
-	case IP_VERSION(11, 0, 9):
-		navi10_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(11, 0, 7):
-	case IP_VERSION(11, 0, 11):
-	case IP_VERSION(11, 0, 12):
-	case IP_VERSION(11, 0, 13):
-		sienna_cichlid_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(12, 0, 0):
-	case IP_VERSION(12, 0, 1):
-		renoir_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(11, 5, 0):
-	case IP_VERSION(11, 5, 2):
-		vangogh_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(13, 0, 1):
-	case IP_VERSION(13, 0, 3):
-	case IP_VERSION(13, 0, 8):
-		yellow_carp_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(13, 0, 4):
-	case IP_VERSION(13, 0, 11):
-		smu_v13_0_4_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(13, 0, 5):
-		smu_v13_0_5_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(11, 0, 8):
-		cyan_skillfish_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(11, 0, 2):
-		adev->pm.pp_feature &= ~PP_GFXOFF_MASK;
-		arcturus_set_ppt_funcs(smu);
-		/* OD is not supported on Arcturus */
-		smu->od_enabled = false;
-		break;
-	case IP_VERSION(13, 0, 2):
-		aldebaran_set_ppt_funcs(smu);
-		/* Enable pp_od_clk_voltage node */
-		smu->od_enabled = true;
-		break;
-	case IP_VERSION(13, 0, 0):
-	case IP_VERSION(13, 0, 10):
-		smu_v13_0_0_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(13, 0, 6):
-	case IP_VERSION(13, 0, 14):
-		smu_v13_0_6_set_ppt_funcs(smu);
-		/* Enable pp_od_clk_voltage node */
-		smu->od_enabled = true;
-		break;
-	case IP_VERSION(13, 0, 7):
-		smu_v13_0_7_set_ppt_funcs(smu);
-		break;
-	case IP_VERSION(14, 0, 0):
-	case IP_VERSION(14, 0, 1):
-	case IP_VERSION(14, 0, 4):
 	case IP_VERSION(14, 0, 5):
 		smu_v14_0_0_set_ppt_funcs(smu);
 		break;
 	case IP_VERSION(14, 0, 2):
-	case IP_VERSION(14, 0, 3):
-		smu_v14_0_2_set_ppt_funcs(smu);
-		break;
 	default:
 		return -EINVAL;
 	}

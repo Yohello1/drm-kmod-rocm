@@ -236,11 +236,13 @@ SRCS+= nbio_v2_3.c \
        nbio_v7_2.c \
        nbio_v7_4.c \
        nbio_v7_7.c \
-       nbio_v7_0.c
+       nbio_v7_0.c \
+       smu_v13_0.c vcn_v2_0.c 
 SRCS+=  hdp_v4_0.c \
         hdp_v5_0.c \
         hdp_v5_2.c \
-        hdp_v6_0.c
+        hdp_v6_0.c \
+	jpeg_v4_0_3.c
 SRCS+=  df_v1_7.c \
         df_v3_6.c \
         df_v4_3.c \
@@ -249,9 +251,10 @@ SRCS+=  smuio_v9_0.c \
 	smuio_v11_0.c \
         smuio_v11_0_6.c \
         smuio_v13_0.c
-SRCS+=  nv.c
+SRCS+=  nv.c 
 SRCS+=  soc21.c \
-        soc24.c
+        soc24.c \
+	jpeg_v2_0.c
 SRCS+=  navi10_ih.c \
         vega10_ih.c \
         vega20_ih.c 
@@ -282,8 +285,6 @@ SRCS+=	amd_powerplay.c \
 	smu_v14_0_2_ppt.c \
 	smu_helper.c \
 	smumgr.c \
-	vangogh_ppt.c \
-	vegam_smumgr.c
 
 .ifdef (CONFIG_DEBUG_FS)
 SRCS+=	amdgpu_pmu.c
