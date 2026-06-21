@@ -295,11 +295,14 @@ _dml=	${SRCDIR}/display/dc/dml \
 	${SRCDIR}/pm/swsmu/smu12 \
 	${SRCDIR}/pm/swsmu/smu13 \
 	${SRCDIR}/pm/swsmu/smu14 \
-	${DRM}/scheduler
-
+	${SRCDIR}/amdkfd \
+	${DRM}/scheduler \
+       	${SRCDIR}/acp \
+       	${SRCDIR}/amdgpu \
 # acp
 SRCS=	acp_hw.c
 
+#	
 # amdgpu
 # amdgpu_acp.c \ # not yet - need i2s
 # amdgpu_hmm.c \  # disabled
@@ -660,6 +663,31 @@ SRCS+=	dce_abm.c \
 	dmub_replay.c \
 	dmub_hw_lock_mgr.c \
 	dmub_outbox.c
+
+
+#.PATH: /root/dev/kmod/drivers/gpu/drm/amd/amdkfd
+#CFLAGS+= -I/root/dev/kmod/drivers/gpu/drm/amd/amdkfd
+CFLAGS+= -DCONFIG_HAVE_AMDGPU_KFD
+SRCS+= \
+    kfd_module.c 
+#    kfd_device.c 
+#    kfd_chardev.c \
+#    kfd_process.c \
+#    kfd_topology.c \
+#    kfd_crat.c \
+#    kfd_pasid.c \
+#    kfd_doorbell.c \
+#    kfd_events.c \
+#    kfd_interrupt.c \
+#    kfd_device_queue_manager.c \
+#    kfd_process_queue_manager.c \
+#    kfd_queue.c \
+#    kfd_kernel_queue.c \
+#    kfd_packet_manager.c \
+#    kfd_mqd_manager.c \
+#    kfd_flat_memory.c
+
+# CFLAGS+= -I${SRCDIR}/amdkfd
 
 # display/dc/dce100
 SRCS+=	dce100_hwseq.c \
@@ -1291,7 +1319,7 @@ CFLAGS+= -I${SRCDIR:H:H}
 CFLAGS+= -I${SRCDIR}
 CFLAGS+= -I${SRCDIR}/acp/include
 CFLAGS+= -I${SRCDIR}/amdgpu
-CFLAGS+= -I${SRCDIR}/amdkfd
+# CFLAGS+= -I${SRCDIR}/amdkfd
 CFLAGS+= -I${SRCDIR}/display
 CFLAGS+= -I${SRCDIR}/display/amdgpu_dm
 CFLAGS+= -I${SRCDIR}/display/dc

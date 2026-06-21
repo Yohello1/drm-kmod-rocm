@@ -1,53 +1,45 @@
 # `kconfig.mk` defines variables used to conditionally add files to $(SRCS).
 .include "../../kconfig.mk"
 
-SRCDIR=	${.CURDIR:H:H}/drivers/gpu/drm/amd
+SRCDIR= ${.CURDIR:H:H}/drivers/gpu/drm/amd
 
-.PATH:	${SRCDIR}/amdkfd
+.PATH:  ${SRCDIR}/amdkfd
 
-KMOD	= amdkfd
+KMOD    = amdkfd
+EXPORT_SYMS=    YES
 
-EXPORT_SYMS=	YES
+SRCS    = \
+        kfd_module.c \
+        kfd_device.c \
+        kfd_chardev.c \
+        kfd_process.c \
+        kfd_topology.c \
+        kfd_crat.c \
+        kfd_pasid.c \
+        kfd_doorbell.c \
+        kfd_events.c \
+        kfd_interrupt.c
 
-# XXX NOT PORTED YET:
-#	kfd_device.c : amd_iommu 
-#	kfd_chardev.c : lots of missing stuff
-#	kfd_device_queue_manager_cik.c : memset declaration missing in rwsem
-#	kfd_device_queue_manager_vi.c : memset declaration missing in rwsem
-#	kfd_events.c : incomplete mm struct
-#	kfd_module.c : module version macros
-#	kfd_mqd_manager_cik.c : we seem to be missing an include w/ basic types
-#	kfd_mqd_manager_vi.c : we seem to be missing an include w/ basic types
-#	kfd_process.c : srcu
-#	kfd_topology.c : rwsems
 
-SRCS	= \
-	cik_event_interrupt.c \
-	kfd_dbgdev.c \
-	kfd_dbgmgr.c \
-	kfd_device_queue_manager.c \
-	kfd_doorbell.c \
-	kfd_flat_memory.c \
-	kfd_interrupt.c \
-	kfd_kernel_queue.c \
-	kfd_kernel_queue_cik.c \
-	kfd_kernel_queue_vi.c \
-	kfd_mqd_manager.c \
-	kfd_packet_manager.c \
-	kfd_pasid.c \
-	kfd_process_queue_manager.c \
-	kfd_queue.c #\
-#	kfd_topology.c
+SRCS    += \
+        kfd_device_queue_manager.c \
+        kfd_process_queue_manager.c \
+        kfd_queue.c \
+        kfd_kernel_queue.c \
+        kfd_packet_manager.c \
+        kfd_mqd_manager.c \
+        kfd_flat_memory.c
 
-SRCS+=	device_if.h \
-	vnode_if.h \
-	bus_if.h \
-	pci_if.h \
-	pci_iov_if.h \
-	iicbus_if.h \
-	opt_drm.h \
-	opt_vm.h \
-	opt_syscons.h
+
+SRCS+=  device_if.h \
+        vnode_if.h \
+        bus_if.h \
+        pci_if.h \
+        pci_iov_if.h \
+        iicbus_if.h \
+        opt_drm.h \
+        opt_vm.h \
+        opt_syscons.h
 
 CLEANFILES+= ${KMOD}.ko.full ${KMOD}.ko.debug
 
@@ -62,6 +54,9 @@ CFLAGS+= -I${.CURDIR:H:H}/linuxkpi/gplv2/include
 CFLAGS+= -I${SYSDIR}/compat/linuxkpi/common/include
 CFLAGS+= -I${SYSDIR}/compat/linuxkpi/dummy/include
 
+# Add this line to the top of your Makefile flags section
+CFLAGS+= -I${.CURDIR}/../../linuxkpi/dummy/include
+
 CFLAGS+= -I${.CURDIR:H:H}/include
 CFLAGS+= -I${.CURDIR:H:H}/include/drm
 CFLAGS+= -I${.CURDIR:H:H}/include/uapi
@@ -70,19 +65,16 @@ CFLAGS+= -I${SRCDIR:H:H}
 CFLAGS+= -I${SRCDIR}/amdgpu
 CFLAGS+= -I${SRCDIR}/include
 CFLAGS+= -I${SRCDIR}/acp/include
-CFLAGS+= -I${SRCDIR}/powerplay/inc
-CFLAGS+= -I${SRCDIR}/scheduler
 CFLAGS+= -I${SRCDIR}/include/asic_reg
-
+CFLAGS+= -I${SRCDIR}/pm/inc
 CFLAGS+= '-DLINUXKPI_PARAM_PREFIX=amdkfd_'
 CFLAGS+= '-DKBUILD_MODNAME="${KMOD}"'
 
-CWARNFLAGS+=	-Wno-pointer-arith
-CWARNFLAGS+=	${CWARNFLAGS.${.IMPSRC:T}}
+CWARNFLAGS+=    -Wno-pointer-arith
+CWARNFLAGS+=    ${CWARNFLAGS.${.IMPSRC:T}}
 
-CWARNFLAGS.kfd_chardev.c=	-Wno-format
-CWARNFLAGS.kfd_dbgdev.c=	-Wno-format
-CWARNFLAGS.kfd_device_queue_manager.c=	-Wno-format -Wno-strict-prototypes -Wno-implicit-function-declaration
-CWARNFLAGS.kfd_doorbell.c=	-Wno-format
-CWARNFLAGS.kfd_packet_manager.c=	-Wno-format
-CWARNFLAGS.kfd_queue.c= -Wno-format
+CWARNFLAGS.kfd_chardev.c=               -Wno-format
+CWARNFLAGS.kfd_device_queue_manager.c=  -Wno-format -Wno-strict-prototypes -Wno-implicit-function-declaration
+CWARNFLAGS.kfd_doorbell.c=              -Wno-format
+CWARNFLAGS.kfd_packet_manager.c=        -Wno-format
+CWARNFLAGS.kfd_queue.c=                 -Wno-format
