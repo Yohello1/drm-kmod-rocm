@@ -34,7 +34,6 @@
 #include <linux/time.h>
 #include <linux/mm.h>
 #include <linux/mman.h>
-#include <linux/ptrace.h>
 #include <linux/dma-buf.h>
 #include <linux/processor.h>
 #include "kfd_priv.h"
@@ -2929,9 +2928,7 @@ static int kfd_ioctl_set_debug_trap(struct file *filep, struct kfd_process *p, v
 	if (args->op == KFD_IOC_DBG_TRAP_ENABLE) {
 		bool create_process;
 
-		rcu_read_lock();
-		create_process = thread && thread != current && ptrace_parent(thread) == current;
-		rcu_read_unlock();
+		create_process = thread && thread != current;
 
 		target = create_process ? kfd_create_process(thread) :
 					kfd_lookup_process_by_pid(pid);
@@ -2946,19 +2943,23 @@ static int kfd_ioctl_set_debug_trap(struct file *filep, struct kfd_process *p, v
 		goto out;
 	}
 
-	/* Check if target is still PTRACED. */
-	rcu_read_lock();
-	if (target != p && args->op != KFD_IOC_DBG_TRAP_DISABLE
-				&& ptrace_parent(target->lead_thread) != current) {
-		pr_err("PID %i is not PTRACED and cannot be debugged\n", args->pid);
-		r = -EPERM;
+	mutex_lock(&target->mutex);
+
+	/* Check if target is still debugged by the caller. */
+	if (target != p && args->op != KFD_IOC_DBG_TRAP_DISABLE) {
+		if (args->op == KFD_IOC_DBG_TRAP_ENABLE) {
+			if (target->debugger_process && target->debugger_process != p) {
+				pr_err("PID %i is already being debugged by another process\n", args->pid);
+				r = -EBUSY;
+			}
+		} else if (target->debugger_process != p) {
+			pr_err("PID %i is not being debugged by this process\n", args->pid);
+			r = -EPERM;
+		}
 	}
-	rcu_read_unlock();
 
 	if (r)
-		goto out;
-
-	mutex_lock(&target->mutex);
+		goto unlock_out;
 
 	if (args->op != KFD_IOC_DBG_TRAP_ENABLE && !target->debug_trap_enabled) {
 		pr_err("PID %i not debug enabled for op %i\n", args->pid, args->op);
@@ -3241,7 +3242,6 @@ static long kfd_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	char *kdata = NULL;
 	unsigned int usize, asize;
 	int retcode = -EINVAL;
-	bool ptrace_attached = false;
 
 	if (nr >= AMDKFD_CORE_IOCTL_COUNT)
 		goto err_i1;
@@ -3268,14 +3268,8 @@ static long kfd_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	 */
 	process = filep->private_data;
 
-	rcu_read_lock();
-	if ((ioctl->flags & KFD_IOC_FLAG_CHECKPOINT_RESTORE) &&
-	    ptrace_parent(process->lead_thread) == current)
-		ptrace_attached = true;
-	rcu_read_unlock();
-
 	if (process->lead_thread != current->group_leader
-	    && !ptrace_attached) {
+	    && !(ioctl->flags & KFD_IOC_FLAG_CHECKPOINT_RESTORE)) {
 		dev_dbg(kfd_device, "Using KFD FD in wrong process\n");
 		retcode = -EBADF;
 		goto err_i1;
