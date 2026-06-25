@@ -12,7 +12,7 @@ _amdgpu=	amdgpu
 .endif
 
 .if ${MACHINE_CPUARCH} == "amd64"
- _amdkfd=	amdkfd
+#  _amdkfd=	amdkfd
 .endif
 
 SUBDIR=	${_amdgpu} \

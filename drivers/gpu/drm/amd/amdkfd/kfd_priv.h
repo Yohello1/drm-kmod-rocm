@@ -46,6 +46,9 @@
 #include <kgd_kfd_interface.h>
 #include <linux/swap.h>
 
+#include <linux/kfifo.h>
+#include <linux/sched.h>
+
 
 #include <linux/kfifo.h>          /* Fixes: struct kfifo ih_fifo */
 #include <linux/pid.h>            /* Fixes: struct pid *pid visibility */
@@ -157,7 +160,7 @@ extern int max_num_of_queues_per_device;
 
 
 /* Kernel module parameter to specify the scheduling policy */
-const extern int sched_policy;
+ extern int sched_policy;
 
 /*
  * Kernel module parameter to specify the maximum process
@@ -183,7 +186,7 @@ extern int debug_largebar;
 extern int amdgpu_noretry;
 
 /* Halt if HWS hang is detected */
-extern const int halt_if_hws_hang;
+extern int halt_if_hws_hang;
 
 /* Whether MEC FW support GWS barriers */
 extern bool hws_gws_support;
@@ -197,7 +200,7 @@ extern int queue_preemption_timeout_ms;
 extern int amdgpu_no_queue_eviction_on_vm_fault;
 
 /* Enable eviction debug messages */
-extern const bool debug_evictions;
+extern bool debug_evictions;
 
 extern struct mutex kfd_processes_mutex;
 
@@ -242,6 +245,34 @@ struct kfd_device_info {
 
 unsigned int kfd_get_num_sdma_engines(struct kfd_node *kdev);
 unsigned int kfd_get_num_xgmi_sdma_engines(struct kfd_node *kdev);
+
+
+// do not do this
+#include <linux/kfifo.h>
+#include <linux/sched.h>
+struct kfifo {
+	unsigned int in;
+	unsigned int out;
+	unsigned int mask;
+	unsigned int esize;
+	void *data;
+};
+
+
+// Forward declare struct pid to satisfy Clang's visibility constraints
+struct pid;
+
+// Stub missing KFD runtime info if it isn't defined
+struct kfd_runtime_info {
+    uint64_t dummy;
+};
+
+// Stub the missing SVM attribute structure
+struct kfd_ioctl_svm_attribute {
+    uint32_t type;
+    uint32_t value;
+};
+
 
 struct kfd_mem_obj {
 	uint32_t range_start;

@@ -38,6 +38,10 @@
 #include "amdgpu_vm.h"
 #include "amdgpu_xcp.h"
 
+// do not do this
+int kgd2kfd_init(void);
+void kgd2kfd_exit(void);
+
 #ifdef __FreeBSD__
 struct mmu_interval_notifier;
 #endif
@@ -420,8 +424,8 @@ int kgd2kfd_resume_mm(struct mm_struct *mm);
 int kgd2kfd_schedule_evict_and_restore_process(struct mm_struct *mm,
 						struct dma_fence *fence);
 #if IS_ENABLED(CONFIG_HSA_AMD)
-int kgd2kfd_init(void);
-void kgd2kfd_exit(void);
+// int kgd2kfd_init(void);
+// void kgd2kfd_exit(void);
 struct kfd_dev *kgd2kfd_probe(struct amdgpu_device *adev, bool vf);
 bool kgd2kfd_device_init(struct kfd_dev *kfd,
 			 const struct kgd2kfd_shared_resources *gpu_resources);
@@ -439,14 +443,6 @@ void kgd2kfd_unlock_kfd(void);
 int kgd2kfd_start_sched(struct kfd_dev *kfd, uint32_t node_id);
 int kgd2kfd_stop_sched(struct kfd_dev *kfd, uint32_t node_id);
 #else
-static inline int kgd2kfd_init(void)
-{
-	return -ENOENT;
-}
-
-static inline void kgd2kfd_exit(void)
-{
-}
 
 static inline
 struct kfd_dev *kgd2kfd_probe(struct amdgpu_device *adev, bool vf)

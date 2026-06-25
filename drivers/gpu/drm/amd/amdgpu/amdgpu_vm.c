@@ -86,6 +86,13 @@
  * accessing an invalid page on a CPU.
  */
 
+// DO NOT DO
+// Temporary stub to disable SVM recovery path
+// Temporary stub to disable SVM recovery path and bypass parameter count error
+static inline int svm_range_restore_pages(void *adev, uint32_t pasid, uint32_t vmid, uint32_t node_id, uint64_t addr, uint64_t ts, bool write_fault) {
+    return 0; 
+}
+
 #define START(node) ((node)->start)
 #define LAST(node) ((node)->last)
 

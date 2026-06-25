@@ -38,6 +38,18 @@
 
 #define MQD_SIZE_ALIGNED 768
 
+#ifndef nr_cpu_ids
+#define nr_cpu_ids mp_ncpus  /* FreeBSD's global count of CPUs */
+#endif
+
+#ifndef cpu_to_node
+#define cpu_to_node(cpu) 0   /* Fallback to Node 0 */
+#endif
+
+#ifndef numa_node_id
+#define numa_node_id() 0     /* Fallback to Node 0 */
+#endif
+
 /*
  * kfd_locked is used to lock the kfd driver during suspend or reset
  * once locked, kfd driver will stop any further GPU execution.

@@ -32,6 +32,7 @@
 #include "kfd_priv.h"
 #include "kfd_mqd_manager.h"
 
+struct kfd_queue_snapshot_entry;
 
 #define VMID_NUM 16
 
