@@ -36,6 +36,7 @@
 #include <linux/mman.h>
 #include <linux/dma-buf.h>
 #include <linux/processor.h>
+#include <linux/semaphore.h>
 #include "kfd_priv.h"
 #include "kfd_device_queue_manager.h"
 #include "kfd_svm.h"
@@ -94,11 +95,11 @@ int kfd_chardev_init(void)
 	if (err < 0)
 		goto err_register_chrdev;
 
-	err = class_register(&kfd_class);
+	err = class_register((struct class*) &kfd_class);
 	if (err)
 		goto err_class_create;
 
-	kfd_device = device_create(&kfd_class, NULL,
+	kfd_device = device_create((struct class*) &kfd_class, NULL,
 				   MKDEV(kfd_char_dev_major, 0),
 				   NULL, kfd_dev_name);
 	err = PTR_ERR(kfd_device);
@@ -108,7 +109,7 @@ int kfd_chardev_init(void)
 	return 0;
 
 err_device_create:
-	class_unregister(&kfd_class);
+	class_unregister((struct class*) &kfd_class);
 err_class_create:
 	unregister_chrdev(kfd_char_dev_major, kfd_dev_name);
 err_register_chrdev:
@@ -117,8 +118,8 @@ err_register_chrdev:
 
 void kfd_chardev_exit(void)
 {
-	device_destroy(&kfd_class, MKDEV(kfd_char_dev_major, 0));
-	class_unregister(&kfd_class);
+	device_destroy((struct class*) &kfd_class, MKDEV(kfd_char_dev_major, 0));
+	class_unregister((struct class*) &kfd_class);
 	unregister_chrdev(kfd_char_dev_major, kfd_dev_name);
 	kfd_device = NULL;
 }
@@ -1761,6 +1762,8 @@ static int criu_checkpoint_devices(struct kfd_process *p,
 			     uint8_t __user *user_priv_data,
 			     uint64_t *priv_offset)
 {
+	return -ENOTTY;
+/*
 	struct kfd_criu_device_priv_data *device_priv = NULL;
 	struct kfd_criu_device_bucket *device_buckets = NULL;
 	int ret = 0, i;
@@ -1783,10 +1786,10 @@ static int criu_checkpoint_devices(struct kfd_process *p,
 		device_buckets[i].user_gpu_id = pdd->user_gpu_id;
 		device_buckets[i].actual_gpu_id = pdd->dev->id;
 
-		/*
-		 * priv_data does not contain useful information for now and is reserved for
-		 * future use, so we do not set its contents.
-		 */
+	//	
+	// priv_data does not contain useful information for now and is reserved for
+	// future use, so we do not set its contents.
+	//
 	}
 
 	ret = copy_to_user(user_addr, device_buckets, num_devices * sizeof(*device_buckets));
@@ -1809,7 +1812,9 @@ exit:
 	kvfree(device_buckets);
 	kvfree(device_priv);
 	return ret;
+*/
 }
+
 
 static uint32_t get_process_num_bos(struct kfd_process *p)
 {
@@ -1836,6 +1841,8 @@ static int criu_get_prime_handle(struct kgd_mem *mem,
 				 int flags, u32 *shared_fd,
 				 struct file **file)
 {
+	return -ENOTTY;
+/*
 	struct dma_buf *dmabuf;
 	int ret;
 
@@ -1858,6 +1865,7 @@ static int criu_get_prime_handle(struct kgd_mem *mem,
 out_free_dmabuf:
 	dma_buf_put(dmabuf);
 	return ret;
+*/
 }
 
 static void commit_files(struct file **files,
@@ -2550,6 +2558,8 @@ static int criu_restore(struct file *filep,
 			struct kfd_process *p,
 			struct kfd_ioctl_criu_args *args)
 {
+	return -EOPNOTSUPP;	
+/*
 	uint64_t priv_offset = 0;
 	int ret = 0;
 
@@ -2562,15 +2572,15 @@ static int criu_restore(struct file *filep,
 
 	mutex_lock(&p->mutex);
 
-	/*
+	*
 	 * Set the process to evicted state to avoid running any new queues before all the memory
 	 * mappings are ready.
-	 */
+	 *
 	ret = kfd_process_evict_queues(p, KFD_QUEUE_EVICTION_CRIU_RESTORE);
 	if (ret)
 		goto exit_unlock;
 
-	/* Each function will adjust priv_offset based on how many bytes they consumed */
+	 Each function will adjust priv_offset based on how many bytes they consumed 
 	ret = criu_restore_process(p, args, &priv_offset, args->priv_data_size);
 	if (ret)
 		goto exit_unlock;
@@ -2600,6 +2610,8 @@ exit_unlock:
 		pr_debug("CRIU restore successful\n");
 
 	return ret;
+
+*/
 }
 
 static int criu_unpause(struct file *filep,
@@ -2626,6 +2638,7 @@ static int criu_unpause(struct file *filep,
 	return ret;
 }
 
+/*
 static int criu_resume(struct file *filep,
 			struct kfd_process *p,
 			struct kfd_ioctl_criu_args *args)
@@ -2711,7 +2724,6 @@ err_unlock:
 	mutex_unlock(&p->mutex);
 	return ret;
 }
-
 static int kfd_ioctl_criu(struct file *filep, struct kfd_process *p, void *data)
 {
 	struct kfd_ioctl_criu_args *args = data;
@@ -2745,6 +2757,7 @@ static int kfd_ioctl_criu(struct file *filep, struct kfd_process *p, void *data)
 
 	return ret;
 }
+*/
 
 static int runtime_enable(struct kfd_process *p, uint64_t r_debug,
 			bool enable_ttmp_setup)
@@ -2806,7 +2819,7 @@ retry:
 		}
 
 		mutex_unlock(&p->mutex);
-		ret = down_interruptible(&p->runtime_enable_sema);
+		ret = 0; down_interruptible(&p->runtime_enable_sema);
 		mutex_lock(&p->mutex);
 
 		p->is_runtime_retry = !!ret;
@@ -2832,7 +2845,7 @@ static int runtime_disable(struct kfd_process *p)
 					p, NULL, 0, false, NULL, 0);
 
 		mutex_unlock(&p->mutex);
-		ret = down_interruptible(&p->runtime_enable_sema);
+		ret = 0; down_interruptible(&p->runtime_enable_sema);
 		mutex_lock(&p->mutex);
 
 		p->is_runtime_retry = !!ret;
@@ -3213,9 +3226,9 @@ static const struct amdkfd_ioctl_desc amdkfd_ioctls[] = {
 
 	AMDKFD_IOCTL_DEF(AMDKFD_IOC_SET_XNACK_MODE,
 			kfd_ioctl_set_xnack_mode, 0),
-
-	AMDKFD_IOCTL_DEF(AMDKFD_IOC_CRIU_OP,
-			kfd_ioctl_criu, KFD_IOC_FLAG_CHECKPOINT_RESTORE),
+// disabled for now
+//	AMDKFD_IOCTL_DEF(AMDKFD_IOC_CRIU_OP,
+//			kfd_ioctl_criu, KFD_IOC_FLAG_CHECKPOINT_RESTORE),
 
 	AMDKFD_IOCTL_DEF(AMDKFD_IOC_AVAILABLE_MEMORY,
 			kfd_ioctl_get_available_memory, 0),
@@ -3288,7 +3301,7 @@ static long kfd_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	 * Versions of docker shipped in Ubuntu 18.xx and 20.xx do not support
 	 * CAP_CHECKPOINT_RESTORE, so we also allow access if CAP_SYS_ADMIN as CAP_SYS_ADMIN is a
 	 * more priviledged access.
-	 */
+	 * TODO: I do no think FreeBSD supports this at all, lowkey we fucked
 	if (unlikely(ioctl->flags & KFD_IOC_FLAG_CHECKPOINT_RESTORE)) {
 		if (!capable(CAP_CHECKPOINT_RESTORE) &&
 						!capable(CAP_SYS_ADMIN)) {
@@ -3296,7 +3309,7 @@ static long kfd_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			goto err_i1;
 		}
 	}
-
+	*/
 	if (cmd & (IOC_IN | IOC_OUT)) {
 		if (asize <= sizeof(stack_kdata)) {
 			kdata = stack_kdata;

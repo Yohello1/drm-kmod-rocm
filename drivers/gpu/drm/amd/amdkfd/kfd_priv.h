@@ -262,18 +262,6 @@ struct kfifo {
 // Forward declare struct pid to satisfy Clang's visibility constraints
 struct pid;
 
-// Stub missing KFD runtime info if it isn't defined
-struct kfd_runtime_info {
-    uint64_t dummy;
-};
-
-// Stub the missing SVM attribute structure
-struct kfd_ioctl_svm_attribute {
-    uint32_t type;
-    uint32_t value;
-};
-
-
 struct kfd_mem_obj {
 	uint32_t range_start;
 	uint32_t range_end;
