@@ -33,6 +33,19 @@
 #include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/pm_runtime.h>
+
+#include <linux/srcu.h>
+#include <linux/mmu_notifier.h>
+#include <linux/mman.h>
+#include <linux/jiffies.h>
+#include <linux/kthread.h>
+// #include <asm/page.h>
+
+#include <vm/vm_map.h>
+#include <machine/param.h> // For vtophys
+
+#include <linux/srcu.h>
+
 #include "amdgpu_amdkfd.h"
 #include "amdgpu.h"
 
@@ -43,6 +56,11 @@ struct mm_struct;
 #include "kfd_svm.h"
 #include "kfd_smi_events.h"
 #include "kfd_debug.h"
+
+
+#define DEFINE_SRCU(name) \
+        struct srcu_struct name
+
 
 /*
  * List of struct kfd_process (field kfd_process).
@@ -101,7 +119,13 @@ static void kfd_sdma_activity_worker(struct work_struct *work)
 	struct kfd_sdma_activity_handler_workarea *workarea;
 	struct kfd_process_device *pdd;
 	uint64_t val;
+#if defined(__linux__)
 	struct mm_struct *mm;
+#elif defined(__FreeBSD__)
+	struct vmspace *target_vm = NULL;
+	struct vmspace *orig_vm = NULL;
+#endif
+
 	struct queue *q;
 	struct qcm_process_device *qpd;
 	struct device_queue_manager *dqm;
@@ -176,39 +200,44 @@ static void kfd_sdma_activity_worker(struct work_struct *work)
 		return;
 	}
 
+
 	dqm_unlock(dqm);
 
-	/*
-	 * Get the usage count for each SDMA queue in temp_list.
-	 */
+#if defined(__linux__)
 	mm = get_task_mm(pdd->process->lead_thread);
 	if (!mm)
 		goto cleanup;
-
 	kthread_use_mm(mm);
+#elif defined(__FreeBSD__)
+	struct proc *p = pdd->process->lead_thread->task_thread->td_proc;
+	target_vm = vmspace_acquire_ref(p);
+	if (!target_vm)
+		goto cleanup;
+	orig_vm = curthread->td_proc->p_vmspace;
+	vmspace_switch_aio(target_vm);
+#endif
 
-	list_for_each_entry(sdma_q, &sdma_q_list.list, list) {
-		val = 0;
-		ret = read_sdma_queue_counter(sdma_q->rptr, &val);
-		if (ret) {
-			pr_debug("Failed to read SDMA queue active counter for queue id: %d",
-				 sdma_q->queue_id);
-		} else {
-			sdma_q->sdma_val = val;
-			workarea->sdma_activity_counter += val;
-		}
-	}
+	    list_for_each_entry(sdma_q, &sdma_q_list.list, list) {
+		    val = 0;
+		    ret = read_sdma_queue_counter(sdma_q->rptr, &val);
+		    if (ret) {
+			    pr_debug("Failed to read SDMA queue active counter for queue id: %d",
+				     sdma_q->queue_id);
+		    } else {
+			    sdma_q->sdma_val = val;
+			    workarea->sdma_activity_counter += val;
+		    }
+	    }
 
+#if defined(__linux__)
 	kthread_unuse_mm(mm);
 	mmput(mm);
+#elif defined(__FreeBSD__)
+	vmspace_switch_aio(orig_vm);
+	vmspace_free(target_vm);
+#endif
 
-	/*
-	 * Do a second iteration over qpd_queues_list to check if any SDMA
-	 * nodes got deleted while fetching SDMA counter.
-	 */
 	dqm_lock(dqm);
-
-	workarea->sdma_activity_counter += pdd->sdma_past_activity_counter;
 
 	list_for_each_entry(q, &qpd->queues_list, list) {
 		if (list_empty(&sdma_q_list.list))
@@ -1316,46 +1345,59 @@ void kfd_cleanup_processes(void)
 
 int kfd_process_init_cwsr_apu(struct kfd_process *p, struct file *filep)
 {
-	unsigned long  offset;
-	int i;
-
-	if (p->has_cwsr)
-		return 0;
-
-	for (i = 0; i < p->n_pdds; i++) {
-		struct kfd_node *dev = p->pdds[i]->dev;
-		struct qcm_process_device *qpd = &p->pdds[i]->qpd;
-
-		if (!dev->kfd->cwsr_enabled || qpd->cwsr_kaddr || qpd->cwsr_base)
-			continue;
-
-		offset = KFD_MMAP_TYPE_RESERVED_MEM | KFD_MMAP_GPU_ID(dev->id);
-		qpd->tba_addr = (int64_t)vm_mmap(filep, 0,
-			KFD_CWSR_TBA_TMA_SIZE, PROT_READ | PROT_EXEC,
-			MAP_SHARED, offset);
-
-		if (IS_ERR_VALUE(qpd->tba_addr)) {
-			int err = qpd->tba_addr;
-
-			dev_err(dev->adev->dev,
-				"Failure to set tba address. error %d.\n", err);
-			qpd->tba_addr = 0;
-			qpd->cwsr_kaddr = NULL;
-			return err;
-		}
-
-		memcpy(qpd->cwsr_kaddr, dev->kfd->cwsr_isa, dev->kfd->cwsr_isa_size);
-
-		kfd_process_set_trap_debug_flag(qpd, p->debug_trap_enabled);
-
-		qpd->tma_addr = qpd->tba_addr + KFD_CWSR_TMA_OFFSET;
-		pr_debug("set tba :0x%llx, tma:0x%llx, cwsr_kaddr:%p for pqm.\n",
-			qpd->tba_addr, qpd->tma_addr, qpd->cwsr_kaddr);
-	}
-
-	p->has_cwsr = true;
-
-	return 0;
+        unsigned long  offset;
+        int i;
+ 
+        if (p->has_cwsr)
+                return 0;
+ 
+        for (i = 0; i < p->n_pdds; i++) {
+                struct kfd_node *dev = p->pdds[i]->dev;
+                struct qcm_process_device *qpd = &p->pdds[i]->qpd;
+ 
+                if (!dev->kfd->cwsr_enabled || qpd->cwsr_kaddr || qpd->cwsr_base)
+                        continue;
+ 
+                offset = KFD_MMAP_TYPE_RESERVED_MEM | KFD_MMAP_GPU_ID(dev->id);
+#ifdef __linux__
+                qpd->tba_addr = (int64_t)vm_mmap(filep, 0,
+                        KFD_CWSR_TBA_TMA_SIZE, PROT_READ | PROT_EXEC,
+                        MAP_SHARED, offset);
+#elif defined(__FreeBSD__)
+                vm_offset_t addr = 0;
+                int error;
+                // Use curproc to access the current process address space
+                error = vm_mmap(&curproc->p_vmspace->vm_map, &addr, KFD_CWSR_TBA_TMA_SIZE,
+                                PROT_READ | PROT_EXEC, PROT_READ | PROT_EXEC,
+                                MAP_SHARED, OBJT_DEFAULT, NULL, offset);
+                if (error == 0)
+                        qpd->tba_addr = (int64_t)addr;
+                else
+                        qpd->tba_addr = -error;
+#endif
+ 
+                if (IS_ERR_VALUE(qpd->tba_addr)) {
+                        int err = qpd->tba_addr;
+ 
+                        dev_err(dev->adev->dev,
+                                "Failure to set tba address. error %d.\n", err);
+                        qpd->tba_addr = 0;
+                        qpd->cwsr_kaddr = NULL;
+                        return err;
+                }
+ 
+                memcpy(qpd->cwsr_kaddr, dev->kfd->cwsr_isa, dev->kfd->cwsr_isa_size);
+ 
+                kfd_process_set_trap_debug_flag(qpd, p->debug_trap_enabled);
+ 
+                qpd->tma_addr = qpd->tba_addr + KFD_CWSR_TMA_OFFSET;
+                pr_debug("set tba :0x%llx, tma:0x%llx, cwsr_kaddr:%p for pqm.\n",
+                        qpd->tba_addr, qpd->tma_addr, qpd->cwsr_kaddr);
+        }
+ 
+        p->has_cwsr = true;
+ 
+        return 0;
 }
 
 static int kfd_process_device_init_cwsr_dgpu(struct kfd_process_device *pdd)
@@ -2122,7 +2164,7 @@ int kfd_reserved_mem_mmap(struct kfd_node *dev, struct kfd_process *process,
 		| VM_NORESERVE | VM_DONTDUMP | VM_PFNMAP);
 	/* Mapping pages to user process */
 	return remap_pfn_range(vma, vma->vm_start,
-			       PFN_DOWN(__pa(qpd->cwsr_kaddr)),
+			       PFN_DOWN(vtophys(qpd->cwsr_kaddr) >> PAGE_SHIFT), 
 			       KFD_CWSR_TBA_TMA_SIZE, vma->vm_page_prot);
 }
 
@@ -2193,7 +2235,12 @@ static void send_exception_work_handler(struct work_struct *work)
 	struct send_exception_work_handler_workarea *workarea;
 	struct kfd_process *p;
 	struct queue *q;
+#if defined(__linux__)
 	struct mm_struct *mm;
+#elif defined(__FreeBSD__)
+	struct vmspace *target_vm = NULL;
+	struct vmspace *orig_vm = NULL;
+#endif
 	struct kfd_context_save_area_header __user *csa_header;
 	uint64_t __user *err_payload_ptr;
 	uint64_t cur_err;
@@ -2204,13 +2251,19 @@ static void send_exception_work_handler(struct work_struct *work)
 				work);
 	p = workarea->p;
 
+#if defined(__linux__)
 	mm = get_task_mm(p->lead_thread);
-
 	if (!mm)
 		return;
-
 	kthread_use_mm(mm);
-
+#elif defined(__FreeBSD__)
+	struct proc *p_i = p->lead_thread->task_thread->td_proc;
+	target_vm = vmspace_acquire_ref(p_i);
+	//if (!target_vm) // i assume it will not crash 
+	//	goto cleanup;
+	orig_vm = curthread->td_proc->p_vmspace;
+	vmspace_switch_aio(target_vm);
+#endif 
 	q = pqm_get_user_queue(&p->pqm, workarea->queue_id);
 
 	if (!q)
@@ -2227,8 +2280,13 @@ static void send_exception_work_handler(struct work_struct *work)
 	kfd_set_event(p, ev_id);
 
 out:
+#if defined(__linux__)
 	kthread_unuse_mm(mm);
 	mmput(mm);
+#elif defined(__FreeBSD__)
+	vmspace_switch_aio(orig_vm);
+	vmspace_free(target_vm);
+#endif
 }
 
 int kfd_send_exception_to_runtime(struct kfd_process *p,

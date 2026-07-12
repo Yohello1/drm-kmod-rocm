@@ -670,8 +670,7 @@ SRCS+=	dce_abm.c \
 CFLAGS+= -DCONFIG_HAVE_AMDGPU_KFD
 CFLAGS+= -DCONFIG_HSA_AMD
 SRCS+= \
-    kfd_module.c kfd_device.c kfd_chardev.c 
-#    kfd_process.c \
+    kfd_module.c kfd_device.c kfd_chardev.c kfd_process.c 
 #    kfd_topology.c \
 #    kfd_crat.c \
 #    kfd_pasid.c \

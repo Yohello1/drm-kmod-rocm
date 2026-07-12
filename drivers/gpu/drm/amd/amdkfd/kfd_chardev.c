@@ -3301,15 +3301,17 @@ static long kfd_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	 * Versions of docker shipped in Ubuntu 18.xx and 20.xx do not support
 	 * CAP_CHECKPOINT_RESTORE, so we also allow access if CAP_SYS_ADMIN as CAP_SYS_ADMIN is a
 	 * more priviledged access.
-	 * TODO: I do no think FreeBSD supports this at all, lowkey we fucked
-	if (unlikely(ioctl->flags & KFD_IOC_FLAG_CHECKPOINT_RESTORE)) {
-		if (!capable(CAP_CHECKPOINT_RESTORE) &&
-						!capable(CAP_SYS_ADMIN)) {
-			retcode = -EACCES;
-			goto err_i1;
-		}
-	}
-	*/
+	 */
+	// we slightly fucked, cause this does not exist
+	// however, we do not needs this lol
+	//if (unlikely(ioctl->flags & KFD_IOC_FLAG_CHECKPOINT_RESTORE)) {
+//		if (!capable(CAP_CHECKPOINT_RESTORE) &&
+//						!capable(CAP_SYS_ADMIN)) {
+//			retcode = -EACCES;
+//			goto err_i1;
+//		}
+//	}
+
 	if (cmd & (IOC_IN | IOC_OUT)) {
 		if (asize <= sizeof(stack_kdata)) {
 			kdata = stack_kdata;
