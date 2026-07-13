@@ -378,19 +378,6 @@ u64 amdgpu_amdkfd_xcp_memory_size(struct amdgpu_device *adev, int xcp_id);
 #define KFD_XCP_MEMORY_SIZE(adev, xcp_id) amdgpu_amdkfd_xcp_memory_size((adev), (xcp_id))
 
 
-#if IS_ENABLED(CONFIG_HSA_AMD)
-void amdgpu_amdkfd_gpuvm_init_mem_limits(void);
-void amdgpu_amdkfd_gpuvm_destroy_cb(struct amdgpu_device *adev,
-				struct amdgpu_vm *vm);
-
-/**
- * @amdgpu_amdkfd_release_notify() - Notify KFD when GEM object is released
- *
- * Allows KFD to release its resources associated with the GEM object.
- */
-void amdgpu_amdkfd_release_notify(struct amdgpu_bo *bo);
-void amdgpu_amdkfd_reserve_system_mem(uint64_t size);
-#else
 static inline
 void amdgpu_amdkfd_gpuvm_init_mem_limits(void)
 {
@@ -406,7 +393,6 @@ static inline
 void amdgpu_amdkfd_release_notify(struct amdgpu_bo *bo)
 {
 }
-#endif
 
 #if IS_ENABLED(CONFIG_HSA_AMD_SVM)
 int kgd2kfd_init_zone_device(struct amdgpu_device *adev);
