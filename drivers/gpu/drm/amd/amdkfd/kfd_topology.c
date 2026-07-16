@@ -2318,11 +2318,15 @@ static int kfd_cpumask_to_apic_id(const struct cpumask *cpumask)
 	first_cpu_of_numa_node = cpumask_first(cpumask);
 	if (first_cpu_of_numa_node >= nr_cpu_ids)
 		return -1;
-#ifdef CONFIG_X86_64
-	return cpu_data(first_cpu_of_numa_node).topo.apicid;
+#ifdef __FreeBSD__
+        struct pcpu *pc = pcpu_find(first_cpu_of_numa_node);
+        return (pc != NULL) ? pc->pc_apic_id : 0;
+#elif defined(CONFIG_X86_64)
+        return cpu_data(first_cpu_of_numa_node).topo.apicid;
 #else
-	return first_cpu_of_numa_node;
+        return first_cpu_of_numa_node;
 #endif
+
 }
 
 /* kfd_numa_node_to_apic_id - Returns the APIC ID of the first logical processor
@@ -2333,7 +2337,11 @@ int kfd_numa_node_to_apic_id(int numa_node_id)
 {
 	if (numa_node_id == -1) {
 		pr_warn("Invalid NUMA Node. Use online CPU mask\n");
+#ifdef __FreeBSD__
+		return kfd_cpumask_to_apic_id((const struct cpumask *)&cpu_online_mask);
+#else
 		return kfd_cpumask_to_apic_id(cpu_online_mask);
+#endif
 	}
 	return kfd_cpumask_to_apic_id(cpumask_of_node(numa_node_id));
 }
