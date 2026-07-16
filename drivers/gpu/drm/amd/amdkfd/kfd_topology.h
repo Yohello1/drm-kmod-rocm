@@ -28,7 +28,6 @@
 #include <linux/list.h>
 #include <linux/kfd_sysfs.h>
 #include "kfd_crat.h"
-
 #define KFD_TOPOLOGY_PUBLIC_NAME_SIZE 32
 
 #define HSA_DBG_WATCH_ADDR_MASK_LO_BIT_GFX9	6

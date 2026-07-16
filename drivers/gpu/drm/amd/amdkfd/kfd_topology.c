@@ -32,6 +32,8 @@
 #include <linux/dmi.h>
 #include <linux/atomic.h>
 #include <linux/crc16.h>
+#include <linux/cpufreq.h>
+#include <linux/cpumask.h>
 
 #include "kfd_priv.h"
 #include "kfd_crat.h"
