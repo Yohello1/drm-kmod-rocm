@@ -125,7 +125,6 @@ static void kfd_sdma_activity_worker(struct work_struct *work)
 	struct vmspace *target_vm = NULL;
 	struct vmspace *orig_vm = NULL;
 #endif
-
 	struct queue *q;
 	struct qcm_process_device *qpd;
 	struct device_queue_manager *dqm;

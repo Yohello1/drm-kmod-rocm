@@ -258,6 +258,84 @@ struct kfifo {
 	void *data;
 };
 
+/* -- generic dynamic kfifo compat, matches the struct kfifo above -- */
+#undef kfifo_alloc
+#undef kfifo_free
+#undef kfifo_in
+#undef kfifo_out
+#undef kfifo_len
+#undef kfifo_is_empty
+#undef kfifo_is_full
+
+static inline int
+kfifo_alloc(struct kfifo *_kf, unsigned int _size, gfp_t _gfp)
+{
+        unsigned int _rsize = 1;
+
+        while (_rsize < _size)
+                _rsize <<= 1;
+
+        _kf->data = kmalloc(_rsize, _gfp);
+        if (_kf->data == NULL)
+                return (-ENOMEM);
+        _kf->in = _kf->out = 0;
+        _kf->esize = 1;
+        _kf->mask = _rsize - 1;
+        return (0);
+}
+
+static inline void
+kfifo_free(struct kfifo *_kf)
+{
+        kfree(_kf->data);
+        _kf->data = NULL;
+        _kf->in = _kf->out = _kf->mask = _kf->esize = 0;
+}
+
+static inline bool
+kfifo_is_empty(struct kfifo *_kf) { return (_kf->in == _kf->out); }
+
+static inline bool
+kfifo_is_full(struct kfifo *_kf) { return (_kf->in - _kf->out) > _kf->mask; }
+
+static inline unsigned int
+kfifo_len(struct kfifo *_kf) { return (_kf->in - _kf->out); }
+
+static inline unsigned int
+kfifo_in(struct kfifo *_kf, const void *_buf, unsigned int _len)
+{
+        const unsigned char *_src = _buf;
+        unsigned char *_data = _kf->data;
+        unsigned int _avail, _l;
+
+        _avail = (_kf->mask + 1) - (_kf->in - _kf->out);
+        _len = MIN(_len, _avail);
+
+        _l = MIN(_len, _kf->mask + 1 - (_kf->in & _kf->mask));
+        memcpy(_data + (_kf->in & _kf->mask), _src, _l);
+        memcpy(_data, _src + _l, _len - _l);
+
+        _kf->in += _len;
+        return (_len);
+}
+
+static inline unsigned int
+kfifo_out(struct kfifo *_kf, void *_buf, unsigned int _len)
+{
+        unsigned char *_dst = _buf;
+        unsigned char *_data = _kf->data;
+        unsigned int _l;
+
+        _len = MIN(_len, _kf->in - _kf->out);
+
+        _l = MIN(_len, _kf->mask + 1 - (_kf->out & _kf->mask));
+        memcpy(_dst, _data + (_kf->out & _kf->mask), _l);
+        memcpy(_dst + _l, _data, _len - _l);
+
+        _kf->out += _len;
+        return (_len);
+}
+
 
 // Forward declare struct pid to satisfy Clang's visibility constraints
 struct pid;

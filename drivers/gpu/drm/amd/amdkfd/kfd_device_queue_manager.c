@@ -39,6 +39,10 @@
 #include "mes_v11_api_def.h"
 #include "kfd_debug.h"
 
+#ifndef pr_debug_ratelimited
+#define pr_debug_ratelimited pr_debug
+#endif
+
 /* Size of the per-pipe EOP queue */
 #define CIK_HPD_EOP_BYTES_LOG2 11
 #define CIK_HPD_EOP_BYTES (1U << CIK_HPD_EOP_BYTES_LOG2)
@@ -3178,7 +3182,12 @@ static void copy_context_work_handler (struct work_struct *work)
 	struct copy_context_work_handler_workarea *workarea;
 	struct mqd_manager *mqd_mgr;
 	struct queue *q;
+#if defined(__linux__)
 	struct mm_struct *mm;
+#elif defined(__FreeBSD__)
+	struct vmspace *target_vm = NULL;
+	struct vmspace *orig_vm = NULL;
+#endif
 	struct kfd_process *p;
 	uint32_t tmp_ctl_stack_used_size, tmp_save_area_used_size;
 	int i;
@@ -3188,12 +3197,20 @@ static void copy_context_work_handler (struct work_struct *work)
 			copy_context_work);
 
 	p = workarea->p;
-	mm = get_task_mm(p->lead_thread);
+#if defined(__linux__)
+        mm = get_task_mm(p->lead_thread);
+        if (!mm)  
+                return;
+        kthread_use_mm(mm);
+#elif defined(__FreeBSD__)
+        struct proc *p_i = p->lead_thread->task_thread->td_proc;
+        target_vm = vmspace_acquire_ref(p_i);
+        if (!target_vm)
+                return;  
+        orig_vm = curthread->td_proc->p_vmspace;
+        vmspace_switch_aio(target_vm);
+#endif
 
-	if (!mm)
-		return;
-
-	kthread_use_mm(mm);
 	for (i = 0; i < p->n_pdds; i++) {
 		struct kfd_process_device *pdd = p->pdds[i];
 		struct device_queue_manager *dqm = pdd->dev->dqm;
@@ -3216,8 +3233,14 @@ static void copy_context_work_handler (struct work_struct *work)
 					&tmp_save_area_used_size);
 		}
 	}
+#ifdef __linux__
 	kthread_unuse_mm(mm);
 	mmput(mm);
+#elif defined(__FreeBSD__)
+	vmspace_switch_aio(orig_vm);
+	vmspace_free(target_vm);
+#endif
+
 }
 
 static uint32_t *get_queue_ids(uint32_t num_queues, uint32_t *usr_queue_id_array)
