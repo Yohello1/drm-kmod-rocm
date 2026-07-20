@@ -33,6 +33,38 @@
 #include "kfd_events.h"
 #include "kfd_device_queue_manager.h"
 #include <linux/device.h>
+#include <linux/wait.h>
+
+#define pr_debug_ratelimited pr_debug
+
+#include <linux/wait.h>
+#include <linux/sched.h>
+
+#ifndef init_wait
+static inline void init_wait(wait_queue_t *wait)
+{
+	wait->private = current;
+	wait->func = autoremove_wake_function;
+	INIT_LIST_HEAD(&wait->task_list);
+}
+#endif
+
+#include <sys/param.h>
+#include <vm/vm.h>
+#include <vm/pmap.h>
+
+#ifndef __pa
+#define __pa(va) vtophys((vm_offset_t)(va))
+#endif
+
+#include <linux/idr.h>
+
+#ifndef idr_for_each_entry_continue
+#define idr_for_each_entry_continue(idp, entry, id)			\
+	for ((entry) = idr_get_next((idp), &(id));			\
+	     (entry);							\
+	     (id)++, (entry) = idr_get_next((idp), &(id)))
+#endif
 
 /*
  * Wrapper around wait_queue_entry_t

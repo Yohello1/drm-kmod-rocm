@@ -287,22 +287,53 @@ int amdgpu_amdkfd_stop_sched(struct amdgpu_device *adev, uint32_t node_id);
  * the first place. This resolves a circular lock dependency involving
  * four locks, including the DQM lock and mmap_lock.
  */
-#define read_user_wptr(mmptr, wptr, dst)				\
-	({								\
-		bool valid = false;					\
-		if ((mmptr) && (wptr)) {				\
-			pagefault_disable();				\
-			if ((mmptr) == current->mm) {			\
-				valid = !get_user((dst), (wptr));	\
-			} else if (current->flags & PF_KTHREAD) {	\
-				kthread_use_mm(mmptr);			\
-				valid = !get_user((dst), (wptr));	\
-				kthread_unuse_mm(mmptr);		\
-			}						\
-			pagefault_enable();				\
-		}							\
-		valid;							\
-	})
+#if defined(__linux__)
+
+#define read_user_wptr(mmptr, wptr, dst)                                \
+        ({                                                              \
+                bool valid = false;                                     \
+                if ((mmptr) && (wptr)) {                                \
+                        pagefault_disable();                            \
+                        if ((mmptr) == current->mm) {                   \
+                                valid = !get_user((dst), (wptr));       \
+                        } else if (current->flags & PF_KTHREAD) {       \
+                                kthread_use_mm(mmptr);                  \
+                                valid = !get_user((dst), (wptr));       \
+                                kthread_unuse_mm(mmptr);                \
+                        }                                               \
+                        pagefault_enable();                             \
+                }                                                       \
+                valid;                                                  \
+        })
+
+#elif defined(__FreeBSD__)
+
+#include <sys/proc.h>
+#include <vm/vm_map.h>
+
+#define read_user_wptr(mmptr, wptr, dst)                                \
+        ({                                                              \
+                bool valid = false;                                     \
+                if ((mmptr) && (wptr)) {                                \
+                        pagefault_disable();                            \
+                        if ((mmptr) == current->mm) {                   \
+                                valid = !get_user((dst), (wptr));       \
+                        } else if (curthread->td_pflags & TDP_KTHREAD) { \
+                                struct vmspace *target_vm =             \
+                                    (struct vmspace *)(void *)(mmptr);  \
+                                struct vmspace *orig_vm =               \
+                                    curthread->td_proc->p_vmspace;      \
+                                                                        \
+                                vmspace_switch_aio(target_vm);          \
+                                valid = !get_user((dst), (wptr));       \
+                                vmspace_switch_aio(orig_vm);            \
+                        }                                               \
+                        pagefault_enable();                             \
+                }                                                       \
+                valid;                                                  \
+        })
+
+#endif
 
 /* GPUVM API */
 #define drm_priv_to_vm(drm_priv)					\
@@ -378,6 +409,20 @@ u64 amdgpu_amdkfd_xcp_memory_size(struct amdgpu_device *adev, int xcp_id);
 #define KFD_XCP_MEMORY_SIZE(adev, xcp_id) amdgpu_amdkfd_xcp_memory_size((adev), (xcp_id))
 
 
+
+#if IS_ENABLED(CONFIG_HSA_AMD)
+void amdgpu_amdkfd_gpuvm_init_mem_limits(void);
+void amdgpu_amdkfd_gpuvm_destroy_cb(struct amdgpu_device *adev,
+                                struct amdgpu_vm *vm);
+
+/**
+ * @amdgpu_amdkfd_release_notify() - Notify KFD when GEM object is released
+ *
+ * Allows KFD to release its resources associated with the GEM object.
+ */
+void amdgpu_amdkfd_release_notify(struct amdgpu_bo *bo);
+void amdgpu_amdkfd_reserve_system_mem(uint64_t size);
+#else
 static inline
 void amdgpu_amdkfd_gpuvm_init_mem_limits(void)
 {
@@ -385,7 +430,7 @@ void amdgpu_amdkfd_gpuvm_init_mem_limits(void)
 
 static inline
 void amdgpu_amdkfd_gpuvm_destroy_cb(struct amdgpu_device *adev,
-					struct amdgpu_vm *vm)
+                                        struct amdgpu_vm *vm)
 {
 }
 
@@ -393,6 +438,8 @@ static inline
 void amdgpu_amdkfd_release_notify(struct amdgpu_bo *bo)
 {
 }
+#endif
+
 
 #if IS_ENABLED(CONFIG_HSA_AMD_SVM)
 int kgd2kfd_init_zone_device(struct amdgpu_device *adev);

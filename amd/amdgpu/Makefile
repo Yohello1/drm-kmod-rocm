@@ -40,6 +40,7 @@ _dml=	${SRCDIR}/display/dc/dml \
 	${SRCDIR}/display/dc/dml2/dml21/src/dml2_pmo \
 	${SRCDIR}/display/dc/dml2/dml21/src/dml2_standalone_libraries \
 	${SRCDIR}/display/dc/dml2/dml21/src/dml2_top \
+       	${SRCDIR}/amdkfd \
 	${SRCDIR}/display/dc/dml2/dml21/src/inc
 .endif
 
@@ -571,7 +572,10 @@ SRCS+=	amdgpu_aca.c \
 	vega20_ih.c \
 	vega20_reg_init.c \
 	vi.c \
-	vpe_v6_1.c
+	vpe_v6_1.c \
+	amdgpu_amdkfd_gfx_v11.c \
+	amdgpu_amdkfd_fence.c 
+
 
 .if !empty(KCONFIG:MCOMPAT)
 SRCS+=	amdgpu_ioc32.c
@@ -666,23 +670,20 @@ SRCS+=	dce_abm.c \
 
 
 #.PATH: /root/dev/kmod/drivers/gpu/drm/amd/amdkfd
-#CFLAGS+= -I/root/dev/kmod/drivers/gpu/drm/amd/amdkfd
+CFLAGS+= -I/root/dev/kmod/drivers/gpu/drm/amd/amdkfd
 CFLAGS+= -DCONFIG_HAVE_AMDGPU_KFD
 CFLAGS+= -DCONFIG_HSA_AMD
 SRCS+= \
-    kfd_module.c kfd_device.c kfd_chardev.c kfd_process.c kfd_pasid.c kfd_topology.c 
-#    kfd_topology.c \
+    kfd_module.c kfd_device.c kfd_chardev.c kfd_process.c kfd_pasid.c kfd_topology.c kfd_doorbell.c kfd_mqd_manager.c kfd_device_queue_manager.c kfd_kernel_queue.c kfd_interrupt.c kfd_mqd_manager_v11.c amdgpu_amdkfd_gpuvm.c kfd_events.c kfd_queue.c kfd_flat_memory.c kfd_process_queue_manager.c 
 #    kfd_crat.c \
-#    kfd_pasid.c \
-#    kfd_doorbell.c \
 #    kfd_events.c \
 #    kfd_interrupt.c \
-#    kfd_device_queue_manager.c \
+#    .c \
 #    kfd_process_queue_manager.c \
 #    kfd_queue.c \
 #    kfd_kernel_queue.c \
 #    kfd_packet_manager.c \
-#    kfd_mqd_manager.c \
+#    
 #    kfd_flat_memory.c
 
 # CFLAGS+= -I${SRCDIR}/amdkfd
