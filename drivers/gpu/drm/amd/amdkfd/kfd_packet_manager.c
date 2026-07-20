@@ -46,7 +46,7 @@ static void pm_calc_rlib_size(struct packet_manager *pm,
 	unsigned int map_queue_size;
 	unsigned int max_proc_per_quantum = 1;
 	struct kfd_node *node = pm->dqm->dev;
-	struct device *dev = node->adev->dev;
+	__unused struct device *dev = node->adev->dev;
 
 	process_count = pm->dqm->processes_count;
 	queue_count = pm->dqm->active_queue_count;
@@ -243,15 +243,17 @@ int pm_init(struct packet_manager *pm, struct device_queue_manager *dqm)
 	case CHIP_POLARIS11:
 	case CHIP_POLARIS12:
 	case CHIP_VEGAM:
-		pm->pmf = &kfd_vi_pm_funcs;
+		// pm->pmf = &kfd_vi_pm_funcs;
 		break;
 	default:
 		if (KFD_GC_VERSION(dqm->dev) == IP_VERSION(9, 4, 2) ||
 		    KFD_GC_VERSION(dqm->dev) == IP_VERSION(9, 4, 3) ||
 		    KFD_GC_VERSION(dqm->dev) == IP_VERSION(9, 4, 4))
-			pm->pmf = &kfd_aldebaran_pm_funcs;
+			// pm->pmf = &kfd_aldebaran_pm_funcs;
+			pr_debug("this is bad");	
 		else if (KFD_GC_VERSION(dqm->dev) >= IP_VERSION(9, 0, 1))
-			pm->pmf = &kfd_v9_pm_funcs;
+			pr_debug("this is very bad"); // pm->pmf = &kfd_v9_pm_funcs;
+			
 		else {
 			WARN(1, "Unexpected ASIC family %u",
 			     dqm->dev->adev->asic_type);

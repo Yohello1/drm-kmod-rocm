@@ -15,6 +15,23 @@
 #include "kfd_smi_events.h"    /* kfd_smi_event_* prototypes */
 #include "kfd_crat.h"          /* kfd_create_crat_image_virtual, etc. */
 
+// temp
+
+/* kfd_smi_events.h */
+void kfd_smi_event_update_vmfault(struct kfd_node *dev, uint16_t pasid) {}
+
+// gen stuff
+/* kfd2kgd stubs for unused GPU generations */
+const struct kfd2kgd_calls gfx_v7_kfd2kgd = {0};
+const struct kfd2kgd_calls gfx_v8_kfd2kgd = {0};
+const struct kfd2kgd_calls gfx_v9_kfd2kgd = {0};
+const struct kfd2kgd_calls gfx_v10_kfd2kgd = {0};
+const struct kfd2kgd_calls gfx_v10_3_kfd2kgd = {0};
+const struct kfd2kgd_calls gfx_v12_kfd2kgd = {0};
+const struct kfd2kgd_calls arcturus_kfd2kgd = {0};
+const struct kfd2kgd_calls aldebaran_kfd2kgd = {0};
+const struct kfd2kgd_calls gc_9_4_3_kfd2kgd = {0};
+
 /* ---------- kfd_debugfs ---------- */
 
 void kfd_debugfs_init(void) {}
@@ -192,3 +209,6 @@ int kfd_get_gpu_cache_info(struct kfd_node *kdev,
 {
 	return -ENOSYS;
 }
+
+
+

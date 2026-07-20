@@ -46,6 +46,39 @@
 #include <linux/kfifo.h>
 #include "kfd_priv.h"
 
+#include "kfd_device_queue_manager.h"
+
+void device_queue_manager_init_cik(struct device_queue_manager_asic_ops *asic_ops) {}
+void device_queue_manager_init_vi(struct device_queue_manager_asic_ops *asic_ops) {}
+void device_queue_manager_init_v9(struct device_queue_manager_asic_ops *asic_ops) {}
+void device_queue_manager_init_v10(struct device_queue_manager_asic_ops *asic_ops) {}
+void device_queue_manager_init_v12(struct device_queue_manager_asic_ops *asic_ops) {}
+
+static void stub_wq(struct kfd_node *dev, const uint32_t *ih_ring_entry) {}
+
+static bool stub_isr(struct kfd_node *dev, const uint32_t *ih_ring_entry,
+                     uint32_t *patched_ihre, bool *patched)
+{ 
+    return false; 
+}
+
+const struct kfd_event_interrupt_class event_interrupt_class_cik = {
+    .interrupt_isr = stub_isr,
+    .interrupt_wq  = stub_wq,
+};
+const struct kfd_event_interrupt_class event_interrupt_class_v9 = {
+    .interrupt_isr = stub_isr,
+    .interrupt_wq  = stub_wq,
+};
+const struct kfd_event_interrupt_class event_interrupt_class_v9_4_3 = {
+    .interrupt_isr = stub_isr,
+    .interrupt_wq  = stub_wq,
+};
+const struct kfd_event_interrupt_class event_interrupt_class_v10 = {
+    .interrupt_isr = stub_isr,
+    .interrupt_wq  = stub_wq,
+};
+
 #define KFD_IH_NUM_ENTRIES 8192
 
 static void interrupt_wq(struct work_struct *);
