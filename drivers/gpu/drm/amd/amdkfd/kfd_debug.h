@@ -82,7 +82,7 @@ static inline bool kfd_dbg_is_per_vmid_supported(struct kfd_node *dev)
 		KFD_GC_VERSION(dev) >= IP_VERSION(11, 0, 0));
 }
 
-void debug_event_write_work_handler(struct work_struct *work);
+inline void debug_event_write_work_handler(struct work_struct *work ) { return; }
 int kfd_dbg_trap_device_snapshot(struct kfd_process *target,
 		uint64_t exception_clear_mask,
 		void __user *user_info,

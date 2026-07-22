@@ -674,7 +674,7 @@ CFLAGS+= -I/root/dev/kmod/drivers/gpu/drm/amd/amdkfd
 CFLAGS+= -DCONFIG_HAVE_AMDGPU_KFD
 CFLAGS+= -DCONFIG_HSA_AMD
 SRCS+= \
-    kfd_module.c kfd_device.c kfd_chardev.c kfd_process.c kfd_pasid.c kfd_topology.c kfd_doorbell.c kfd_mqd_manager.c kfd_device_queue_manager.c kfd_kernel_queue.c kfd_interrupt.c kfd_mqd_manager_v11.c amdgpu_amdkfd_gpuvm.c kfd_events.c kfd_queue.c kfd_flat_memory.c kfd_process_queue_manager.c 
+    kfd_module.c kfd_device.c kfd_chardev.c kfd_process.c kfd_pasid.c kfd_topology.c kfd_doorbell.c kfd_mqd_manager.c kfd_device_queue_manager.c kfd_kernel_queue.c kfd_interrupt.c kfd_mqd_manager_v11.c amdgpu_amdkfd_gpuvm.c kfd_events.c kfd_queue.c kfd_flat_memory.c kfd_process_queue_manager.c kfd_freebsd_stubs.c kfd_device_queue_manager_v11.c kfd_int_process_v11.c kfd_packet_manager.c 
 #    kfd_crat.c \
 #    kfd_events.c \
 #    kfd_interrupt.c \
