@@ -63,7 +63,11 @@ static const struct file_operations kfd_fops = {
 
 static int kfd_char_dev_major = -1;
 struct device *kfd_device;
+#ifdef __linux__
 static const struct class kfd_class = {
+#elif __FreeBSD__
+static struct class kfd_class = {
+#endif
 	.name = kfd_dev_name,
 };
 
@@ -90,14 +94,29 @@ int kfd_chardev_init(void)
 {
 	int err = 0;
 
+	pr_err("corny sex\n");
+
+#ifdef __linux__
 	kfd_char_dev_major = register_chrdev(0, kfd_dev_name, &kfd_fops);
+#elif defined(__FreeBSD__)
+	err = register_chrdev_p(KFD_MAJOR, kfd_dev_name, &kfd_fops,
+	    DRM_DEV_UID, DRM_DEV_GID, DRM_DEV_MODE);
+#endif
 	err = kfd_char_dev_major;
 	if (err < 0)
 		goto err_register_chrdev;
 
-	err = class_register((struct class*) &kfd_class);
+	pr_err("sex kfd\n");
+	pr_err("kfd sex class addr: %p\n", &kfd_class);
+
+	pr_err("kfd sex class name: %s\n", &(*(kfd_class).name));
+
+
+	err = class_register((struct class*) &kfd_class.name);
 	if (err)
 		goto err_class_create;
+
+	pr_err("sex in the city\n");
 
 	kfd_device = device_create((struct class*) &kfd_class, NULL,
 				   MKDEV(kfd_char_dev_major, 0),
@@ -105,6 +124,8 @@ int kfd_chardev_init(void)
 	err = PTR_ERR(kfd_device);
 	if (IS_ERR(kfd_device))
 		goto err_device_create;
+
+	pr_err("great sex\n");
 
 	return 0;
 

@@ -36,6 +36,8 @@ static int kfd_init(void)
 		pr_err("sched_policy has invalid value\n");
 		return -EINVAL;
 	}
+	
+	pr_err("we got past verify module params\n");
 
 	/* Verify module parameters */
 	if ((max_num_of_queues_per_device < 1) ||
@@ -45,17 +47,26 @@ static int kfd_init(void)
 		return -EINVAL;
 	}
 
+
+	pr_err("verify sexy\n");
+
 	err = kfd_chardev_init();
 	if (err < 0)
 		goto err_ioctl;
+
+	pr_err("chardev sexy\n");
 
 	err = kfd_topology_init();
 	if (err < 0)
 		goto err_topology;
 
+	pr_err("we are sexy\n");
+
 	err = kfd_process_create_wq();
 	if (err < 0)
 		goto err_create_wq;
+
+	pr_err("you are sexy\n");
 
 	/* Ignore the return value, so that we can continue
 	 * to init the KFD, even if procfs isn't craated
@@ -63,6 +74,8 @@ static int kfd_init(void)
 	kfd_procfs_init();
 
 	kfd_debugfs_init();
+
+	printf("this is sexy\n");
 
 	return 0;
 
