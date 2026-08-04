@@ -56,7 +56,7 @@
 #include "amd_shared.h"
 #include "amdgpu.h"
 
-#define KFD_MAJOR 228
+#define KFD_MAJOR 298
 
 #define KFD_MAX_RING_ENTRY_SIZE	8
 

@@ -185,30 +185,7 @@ void kfd_smi_event_update_thermal_throttling(struct kfd_node *dev,
 
 /* ---------- kfd_crat ---------- */
 
-int kfd_create_crat_image_virtual(void **crat_image, size_t *size,
-				  int flags, struct kfd_node *kdev,
-				  uint32_t proximity_domain)
-{
-	return -ENOSYS;
-}
-
-void kfd_destroy_crat_image(void *crat_image)
-{
-}
-
-int kfd_parse_crat_table(void *crat_image, struct list_head *device_list,
-			 uint32_t proximity_domain)
-{
-	return -ENOSYS;
-}
 
 /* ---------- kfd_crat (cache info) ---------- */
-
-int kfd_get_gpu_cache_info(struct kfd_node *kdev,
-			   struct kfd_gpu_cache_info **pcache_info)
-{
-	return -ENOSYS;
-}
-
 
 

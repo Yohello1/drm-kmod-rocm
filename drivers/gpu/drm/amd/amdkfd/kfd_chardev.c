@@ -103,8 +103,9 @@ int kfd_chardev_init(void)
 	    DRM_DEV_UID, DRM_DEV_GID, DRM_DEV_MODE);
 #endif
 	err = kfd_char_dev_major;
-	if (err < 0)
+	if (err == 999)
 		goto err_register_chrdev;
+	pr_err("sex kfd_char_dev_major: %d\n", kfd_char_dev_major);
 
 	pr_err("sex kfd\n");
 	pr_err("kfd sex class addr: %p\n", &kfd_class);

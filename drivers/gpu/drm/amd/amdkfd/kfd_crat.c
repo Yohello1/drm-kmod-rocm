@@ -1755,6 +1755,7 @@ static int kfd_fill_cu_for_cpu(int numa_node_id, int *avail_size,
  *
  *	Return 0 if successful else return -ve value
  */
+#ifdef __linux__
 static int kfd_fill_mem_info_for_cpu(int numa_node_id, int *avail_size,
 			int proximity_domain,
 			struct crat_subtype_memory *sub_type_hdr)
@@ -1791,8 +1792,45 @@ static int kfd_fill_mem_info_for_cpu(int numa_node_id, int *avail_size,
 
 	return 0;
 }
+#elif __FreeBSD__
+static int kfd_fill_mem_info_for_cpu(int numa_node_id, int *avail_size,
+				       int proximity_domain,
+				       struct crat_subtype_memory *sub_type_hdr)
+{
+	uint64_t mem_in_bytes = 0;
+
+	*avail_size -= sizeof(struct crat_subtype_memory);
+	if (*avail_size < 0)
+		return -ENOMEM;
+
+	memset(sub_type_hdr, 0, sizeof(struct crat_subtype_memory));
+
+	/* Fill in subtype header data */
+	sub_type_hdr->type = CRAT_SUBTYPE_MEMORY_AFFINITY;
+	sub_type_hdr->length = sizeof(struct crat_subtype_memory);
+	sub_type_hdr->flags = CRAT_SUBTYPE_FLAGS_ENABLED;
+
+	/* Fill in Memory Subunit data */
+
+	/*
+	 * On FreeBSD / LinuxKPI, node-specific pg_data_t is not available.
+	 * Use system total physical memory pages multiplied by PAGE_SIZE.
+	 */
+	struct sysinfo si;
+
+	si_meminfo(&si);
+	mem_in_bytes = (uint64_t)si.totalram * si.mem_unit;
+
+	sub_type_hdr->length_low = lower_32_bits(mem_in_bytes);
+	sub_type_hdr->length_high = upper_32_bits(mem_in_bytes);
+	sub_type_hdr->proximity_domain = proximity_domain;
+
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_X86_64
+#if defined(__linux__) 
 static int kfd_fill_iolink_info_for_cpu(int numa_node_id, int *avail_size,
 				uint32_t *num_entries,
 				struct crat_subtype_iolink *sub_type_hdr)
@@ -1835,6 +1873,59 @@ static int kfd_fill_iolink_info_for_cpu(int numa_node_id, int *avail_size,
 
 	return 0;
 }
+#elif __FreeBSD__
+
+#ifndef for_each_online_node
+#define for_each_online_node(node) for (node = 0; node < 1; node++)
+#endif
+
+static int kfd_fill_iolink_info_for_cpu(int numa_node_id, int *avail_size,
+					uint32_t *num_entries,
+					struct crat_subtype_iolink *sub_type_hdr)
+{
+	int nid;
+	struct cpuinfo_x86 *c = &cpu_data(0);
+	uint8_t link_type;
+
+	if (c->x86_vendor == X86_VENDOR_AMD)
+		link_type = CRAT_IOLINK_TYPE_HYPERTRANSPORT;
+	else
+		link_type = CRAT_IOLINK_TYPE_QPI_1_1;
+
+	*num_entries = 0;
+
+	/* Create IO links from this node to other CPU nodes */
+	/* 
+	 * FreeBSD drm-kmod note: for_each_online_node stubbed out.
+	 * Defaulting to a single domain system (node 0 only).
+	 */
+	for (nid = 0; nid < 1; nid++) {
+		if (nid == numa_node_id) /* node itself */
+			continue;
+
+		*avail_size -= sizeof(struct crat_subtype_iolink);
+		if (*avail_size < 0)
+			return -ENOMEM;
+
+		memset(sub_type_hdr, 0, sizeof(struct crat_subtype_iolink));
+
+		/* Fill in subtype header data */
+		sub_type_hdr->type = CRAT_SUBTYPE_IOLINK_AFFINITY;
+		sub_type_hdr->length = sizeof(struct crat_subtype_iolink);
+		sub_type_hdr->flags = CRAT_SUBTYPE_FLAGS_ENABLED;
+
+		/* Fill in IO link data */
+		sub_type_hdr->proximity_domain_from = numa_node_id;
+		sub_type_hdr->proximity_domain_to = nid;
+		sub_type_hdr->io_interface_type = link_type;
+
+		(*num_entries)++;
+		sub_type_hdr++;
+	}
+
+	return 0;
+}
+#endif
 #endif
 
 /* kfd_create_vcrat_image_cpu - Create Virtual CRAT for CPU
@@ -1875,12 +1966,22 @@ static int kfd_create_vcrat_image_cpu(void *pcrat_image, size_t *size)
 	if (status != AE_OK)
 		pr_warn("DSDT table not found for OEM information\n");
 	else {
+#ifdef __linux__ 
 		crat_table->oem_revision = acpi_table->revision;
 		memcpy(crat_table->oem_id, acpi_table->oem_id,
 				CRAT_OEMID_LENGTH);
 		memcpy(crat_table->oem_table_id, acpi_table->oem_table_id,
 				CRAT_OEMTABLEID_LENGTH);
 		acpi_put_table(acpi_table);
+#elif defined(__FreeBSD__)
+		crat_table->oem_revision = 0;
+		memcpy(crat_table->oem_id, 0, 
+				CRAT_OEMID_LENGTH);
+		memcpy(crat_table->oem_table_id, 0, 
+				CRAT_OEMTABLEID_LENGTH);
+		acpi_put_table(acpi_table);
+
+#endif
 	}
 	crat_table->total_entries = 0;
 	crat_table->num_domains = 0;
@@ -2378,6 +2479,8 @@ int kfd_create_crat_image_virtual(void **crat_image, size_t *size,
 
 	*crat_image = NULL;
 
+	pr_err("crat sex started\n");
+
 	/* Allocate the CPU Virtual CRAT size based on the number of online
 	 * nodes. Allocate VCRAT_SIZE_FOR_GPU for GPU virtual CRAT image.
 	 * This should cover all the current conditions. A check is put not
@@ -2385,6 +2488,7 @@ int kfd_create_crat_image_virtual(void **crat_image, size_t *size,
 	 */
 	switch (flags) {
 	case COMPUTE_UNIT_CPU:
+		pr_err("cpu type sex\n");
 		num_nodes = num_online_nodes();
 		dyn_size = sizeof(struct crat_header) +
 			num_nodes * (sizeof(struct crat_subtype_computeunit) +
@@ -2398,6 +2502,7 @@ int kfd_create_crat_image_virtual(void **crat_image, size_t *size,
 		ret = kfd_create_vcrat_image_cpu(pcrat_image, size);
 		break;
 	case COMPUTE_UNIT_GPU:
+		pr_err("gpu type sex\n");
 		if (!kdev)
 			return -EINVAL;
 		pcrat_image = kvmalloc(VCRAT_SIZE_FOR_GPU, GFP_KERNEL);
@@ -2408,6 +2513,7 @@ int kfd_create_crat_image_virtual(void **crat_image, size_t *size,
 						 proximity_domain);
 		break;
 	case (COMPUTE_UNIT_CPU | COMPUTE_UNIT_GPU):
+		pr_err("apu type sex\n");
 		/* TODO: */
 		ret = -EINVAL;
 		pr_err("VCRAT not implemented for APU\n");
