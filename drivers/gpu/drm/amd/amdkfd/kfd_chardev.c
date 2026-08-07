@@ -37,6 +37,7 @@
 #include <linux/dma-buf.h>
 #include <linux/processor.h>
 #include <linux/semaphore.h>
+#include <linux/cdev.h>
 #include "kfd_priv.h"
 #include "kfd_device_queue_manager.h"
 #include "kfd_svm.h"
@@ -99,8 +100,37 @@ int kfd_chardev_init(void)
 #ifdef __linux__
 	kfd_char_dev_major = register_chrdev(0, kfd_dev_name, &kfd_fops);
 #elif defined(__FreeBSD__)
-	err = register_chrdev_p(KFD_MAJOR, kfd_dev_name, &kfd_fops,
-	    DRM_DEV_UID, DRM_DEV_GID, DRM_DEV_MODE);
+
+struct linux_cdev *cdev = cdev_alloc();
+        if (!cdev)
+                return -ENOMEM;
+
+        cdev->ops = &kfd_fops;
+
+        /*
+         * Set the exact leaf name 'kfd'.
+         * kobject_set_name tells devfs to register /dev/kfd directly 
+         * instead of creating a directory /dev/kfd/ with minor sub-nodes.
+         */
+        err = kobject_set_name(&cdev->kobj, "%s", kfd_dev_name);
+        if (err) {
+                kobject_put(&cdev->kobj);
+                return err;
+        }
+
+        /* 
+         * cdev_add registers a single devfs node at dev_t = (MAJOR, 0)
+         * using cdev->kobj.name as the exact path under /dev.
+         */
+        err = cdev_add(cdev, makedev(KFD_MAJOR, 0), 1);
+        if (err != 0) {
+                kobject_put(&cdev->kobj);
+                return err;
+        }
+
+        kfd_char_dev_major = KFD_MAJOR;
+
+
 #endif
 	err = kfd_char_dev_major;
 	if (err == 999)
