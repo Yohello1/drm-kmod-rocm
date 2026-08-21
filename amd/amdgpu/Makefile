@@ -670,7 +670,7 @@ SRCS+=	dce_abm.c \
 
 
 #.PATH: /root/dev/kmod/drivers/gpu/drm/amd/amdkfd
-CFLAGS+= -I/root/code/drm-kmod-rocm/drivers/gpu/drm/amd/amdkfd
+CFLAGS+= -I./../../drivers/gpu/drm/amd/amdkfd
 CFLAGS+= -DCONFIG_HAVE_AMDGPU_KFD
 CFLAGS+= -DCONFIG_HSA_AMD
 CFLAGS+= -Og
