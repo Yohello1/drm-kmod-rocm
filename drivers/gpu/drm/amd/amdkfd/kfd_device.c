@@ -597,16 +597,22 @@ static int kfd_init_node(struct kfd_node *node)
 {
 	int err = -1;
 
+	pr_warn("we are now starting to think about sex\n");
+
 	if (kfd_interrupt_init(node)) {
 		dev_err(kfd_device, "Error initializing interrupts\n");
 		goto kfd_interrupt_error;
 	}
+
+	pr_warn("we can now interupt sex\n");
 
 	node->dqm = device_queue_manager_init(node);
 	if (!node->dqm) {
 		dev_err(kfd_device, "Error initializing queue manager\n");
 		goto device_queue_manager_error;
 	}
+
+	pr_warn("can manage sex devices\n");
 
 	if (kfd_gws_init(node)) {
 		dev_err(kfd_device, "Could not allocate %d gws\n",
@@ -703,6 +709,8 @@ bool kgd2kfd_device_init(struct kfd_dev *kfd,
 	int partition_mode;
 	int xcp_idx;
 
+	pr_err("sex, are we gonna init the device???\n");
+
 	kfd->mec_fw_version = amdgpu_amdkfd_get_fw_version(kfd->adev,
 			KGD_ENGINE_MEC1);
 	kfd->mec2_fw_version = amdgpu_amdkfd_get_fw_version(kfd->adev,
@@ -720,11 +728,14 @@ bool kgd2kfd_device_init(struct kfd_dev *kfd,
 		goto out;
 	}
 
+	pr_err("sex better be legit or im about to be scammed\n");
+
 	/* Allow BIF to recode atomics to PCIe 3.0 AtomicOps.
 	 * 32 and 64-bit requests are possible and must be
 	 * supported.
 	 */
 	kfd->pci_atomic_requested = amdgpu_amdkfd_have_atomics_support(kfd->adev);
+	dev_info(kfd_device, "did sex get diddled instead: %b\n", kfd->pci_atomic_requested);
 	if (!kfd->pci_atomic_requested &&
 	    kfd->device_info.needs_pci_atomics &&
 	    (!kfd->device_info.no_atomic_fw_version ||
