@@ -735,7 +735,7 @@ bool kgd2kfd_device_init(struct kfd_dev *kfd,
 	 * supported.
 	 */
 	kfd->pci_atomic_requested = amdgpu_amdkfd_have_atomics_support(kfd->adev);
-	dev_info(kfd_device, "did sex get diddled instead: %b\n", kfd->pci_atomic_requested);
+	dev_info(kfd_device, "did sex get diddled instead: %d\n", kfd->pci_atomic_requested);
 	if (!kfd->pci_atomic_requested &&
 	    kfd->device_info.needs_pci_atomics &&
 	    (!kfd->device_info.no_atomic_fw_version ||

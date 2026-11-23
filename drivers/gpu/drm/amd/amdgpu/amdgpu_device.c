@@ -4250,7 +4250,7 @@ int amdgpu_device_init(struct amdgpu_device *adev,
 		    IP_VERSION(9, 0, 0))) {
 		adev->have_atomics_support = true;
 	} else {
-#if defined(__linux__) || __FreeBSD_version >= 1600032
+#if defined(__linux__) || defined(pci_enable_atomic_ops_to_root)
 		adev->have_atomics_support =
 			!pci_enable_atomic_ops_to_root(adev->pdev,
 					  PCI_EXP_DEVCAP2_ATOMIC_COMP32 |

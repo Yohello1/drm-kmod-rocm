@@ -52,6 +52,15 @@
 
 #include <linux/kfifo.h>          /* Fixes: struct kfifo ih_fifo */
 #include <linux/pid.h>            /* Fixes: struct pid *pid visibility */
+#if defined(__FreeBSD__) && __FreeBSD_version >= 1600032
+/*
+ * Stock LinuxKPI represents a "struct pid *" as the numeric pid and has no
+ * find_get_pid(); its get_pid_task() takes a pid_t.
+ */
+#define	find_get_pid(nr)	((struct pid *)(uintptr_t)(pid_t)(nr))
+#undef	get_pid_task
+#define	get_pid_task(p, type)	linux_get_pid_task((pid_t)(uintptr_t)(p))
+#endif
 
 #include "amd_shared.h"
 #include "amdgpu.h"
