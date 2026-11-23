@@ -774,6 +774,61 @@ bool amdgpu_ttm_tt_get_user_pages_done(struct ttm_tt *ttm,
 
 	return !amdgpu_hmm_range_get_pages_done(range);
 }
+#elif defined(__FreeBSD__)
+/*
+ * FreeBSD: no MMU notifiers / HMM.  Only KFD userptr BOs are supported; their
+ * user pages are faulted in and wired (vm_fault_quick_hold_pages) when the BO
+ * is created and stay wired until the ttm_tt is unpopulated (BO destruction),
+ * so they can never be invalidated behind the GPU's back.  CPU-side changes to
+ * the mapping (munmap/mremap of the range while the BO exists) are not
+ * propagated: the GPU keeps accessing the originally wired pages.
+ */
+int amdgpu_hmm_register(struct amdgpu_bo *bo, unsigned long addr)
+{
+	return (bo->kfd_bo != NULL ? 0 : -ENODEV);
+}
+
+int amdgpu_ttm_tt_get_user_pages(struct amdgpu_bo *bo, struct page **pages,
+				 struct hmm_range **range)
+{
+	struct ttm_tt *ttm = bo->tbo.ttm;
+	struct amdgpu_ttm_tt *gtt = ttm_to_amdgpu_ttm_tt(ttm);
+	unsigned int gup_flags;
+	long r;
+
+	*range = NULL;
+
+	if (bo->kfd_bo == NULL || gtt == NULL || gtt->userptr == 0)
+		return -EFAULT;
+	/* Must run in the context of the owning process (KFD ioctl). */
+	if ((curproc->p_flag & P_SYSTEM) != 0)
+		return -ESRCH;
+	if (WARN_ONCE(pages[0] != NULL, "userptr pages already wired\n"))
+		return -EBUSY;
+
+	gup_flags = amdgpu_ttm_tt_is_readonly(ttm) ? 0 : FOLL_WRITE;
+	r = get_user_pages(gtt->userptr, ttm->num_pages, gup_flags, pages);
+	if (r < 0) {
+		pr_debug("failed %ld to get user pages 0x%llx\n", r,
+		    gtt->userptr);
+		return (int)r;
+	}
+	return 0;
+}
+
+void amdgpu_ttm_tt_discard_user_pages(struct ttm_tt *ttm,
+				      struct hmm_range *range)
+{
+}
+
+bool amdgpu_ttm_tt_get_user_pages_done(struct ttm_tt *ttm,
+				       struct hmm_range *range)
+{
+	struct amdgpu_ttm_tt *gtt = ttm_to_amdgpu_ttm_tt(ttm);
+
+	/* Wired pages are never invalidated. */
+	return (gtt != NULL && gtt->userptr != 0);
+}
 #endif
 
 /*
@@ -1192,6 +1247,12 @@ static void amdgpu_ttm_tt_unpopulate(struct ttm_device *bdev,
 	amdgpu_ttm_backend_unbind(bdev, ttm);
 
 	if (gtt->userptr) {
+#ifdef __FreeBSD__
+		/* Unwire the pages wired by amdgpu_ttm_tt_get_user_pages(). */
+		for (pgoff_t j = 0; j < ttm->num_pages; ++j)
+			if (ttm->pages[j] != NULL)
+				put_page(ttm->pages[j]);
+#endif
 		amdgpu_ttm_tt_set_user_pages(ttm, NULL);
 		kfree(ttm->sg);
 		ttm->sg = NULL;

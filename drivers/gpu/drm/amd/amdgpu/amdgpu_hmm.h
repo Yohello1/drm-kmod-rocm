@@ -42,6 +42,13 @@ bool amdgpu_hmm_range_get_pages_done(struct hmm_range *hmm_range);
 #if defined(CONFIG_HMM_MIRROR)
 int amdgpu_hmm_register(struct amdgpu_bo *bo, unsigned long addr);
 void amdgpu_hmm_unregister(struct amdgpu_bo *bo);
+#elif defined(__FreeBSD__)
+/*
+ * FreeBSD has no MMU notifiers.  KFD userptr BOs are supported by wiring the
+ * user pages for the lifetime of the BO instead (see amdgpu_ttm.c).
+ */
+int amdgpu_hmm_register(struct amdgpu_bo *bo, unsigned long addr);
+static inline void amdgpu_hmm_unregister(struct amdgpu_bo *bo) {}
 #else
 static inline int amdgpu_hmm_register(struct amdgpu_bo *bo, unsigned long addr)
 {
