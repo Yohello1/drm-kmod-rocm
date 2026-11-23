@@ -3333,8 +3333,19 @@ static long kfd_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	 */
 	process = filep->private_data;
 
+#ifdef __FreeBSD__
+	/*
+	 * LinuxKPI gives every thread its own task_struct with
+	 * group_leader == itself, so the Linux check rejects ioctls from
+	 * any thread other than the one that opened /dev/kfd. Threads of
+	 * the same process share the LinuxKPI mm_struct; compare that.
+	 */
+	if (process->mm != current->mm
+	    && !(ioctl->flags & KFD_IOC_FLAG_CHECKPOINT_RESTORE)) {
+#else
 	if (process->lead_thread != current->group_leader
 	    && !(ioctl->flags & KFD_IOC_FLAG_CHECKPOINT_RESTORE)) {
+#endif
 		dev_dbg(kfd_device, "Using KFD FD in wrong process\n");
 		retcode = -EBADF;
 		goto err_i1;
