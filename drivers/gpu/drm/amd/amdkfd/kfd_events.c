@@ -35,8 +35,6 @@
 #include <linux/device.h>
 #include <linux/wait.h>
 
-#define pr_debug_ratelimited pr_debug
-
 #include <linux/wait.h>
 #include <linux/sched.h>
 

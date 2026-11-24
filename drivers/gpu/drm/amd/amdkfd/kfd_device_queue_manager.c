@@ -39,10 +39,6 @@
 #include "mes_v11_api_def.h"
 #include "kfd_debug.h"
 
-#ifndef pr_debug_ratelimited
-#define pr_debug_ratelimited pr_debug
-#endif
-
 /* Size of the per-pipe EOP queue */
 #define CIK_HPD_EOP_BYTES_LOG2 11
 #define CIK_HPD_EOP_BYTES (1U << CIK_HPD_EOP_BYTES_LOG2)

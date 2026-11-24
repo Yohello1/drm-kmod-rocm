@@ -28,8 +28,6 @@
 #include "kfd_smi_events.h"
 #include "kfd_debug.h"
 
-#define pr_debug_ratelimited pr_debug
-
 /*
  * GFX11 SQ Interrupts
  *
