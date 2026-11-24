@@ -1671,13 +1671,8 @@ int amdgpu_amdkfd_criu_resume(void *p)
                 goto out_unlock;
         }
         WRITE_ONCE(pinfo->block_mmu_notifications, false);
-#ifdef __FreeBSD__
-	queue_delayed_work(system_wq,
-			   &pinfo->restore_userptr_work, 0);
-#else
 	queue_delayed_work(system_freezable_wq,
 			   &pinfo->restore_userptr_work, 0);
-#endif
 out_unlock:
         mutex_unlock(&pinfo->lock);
         return ret;
@@ -2543,15 +2538,9 @@ int amdgpu_amdkfd_evict_userptr(struct mmu_interval_notifier *mni,
 				       KFD_QUEUE_EVICTION_TRIGGER_USERPTR);
 		if (r)
                         pr_err("Failed to quiesce KFD\n");
-        #ifdef __FreeBSD__
-		queue_delayed_work(system_wq,
-				   &process_info->restore_userptr_work,
-				   msecs_to_jiffies(AMDGPU_USERPTR_RESTORE_DELAY_MS));
-#else
 		queue_delayed_work(system_freezable_wq,
 				   &process_info->restore_userptr_work,
 				   msecs_to_jiffies(AMDGPU_USERPTR_RESTORE_DELAY_MS));
-#endif
 
 	}
         mutex_unlock(&process_info->notifier_lock);
@@ -2882,15 +2871,9 @@ unlock_out:
 
         /* If validation failed, reschedule another attempt */
         if (evicted_bos) {
-#ifdef __FreeBSD__
-		queue_delayed_work(system_wq,
-				   &process_info->restore_userptr_work,
-				   msecs_to_jiffies(AMDGPU_USERPTR_RESTORE_DELAY_MS));
-#else
 		queue_delayed_work(system_freezable_wq,
 				   &process_info->restore_userptr_work,
 				   msecs_to_jiffies(AMDGPU_USERPTR_RESTORE_DELAY_MS));
-#endif
 
                 kfd_smi_event_queue_restore_rescheduled(mm);
         }
