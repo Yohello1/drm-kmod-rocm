@@ -677,9 +677,11 @@ CFLAGS+= -DCONFIG_HSA_AMD
 CFLAGS+= -DCONFIG_MMU_NOTIFIER
 CFLAGS+= -DCONFIG_HMM_MIRROR
 CFLAGS+= -DCONFIG_DRM_AMDGPU_USERPTR
+# KFD shared virtual memory (SVM) manager.
+CFLAGS+= -DCONFIG_HSA_AMD_SVM
 CFLAGS+= -Og
 SRCS+= \
-    kfd_module.c kfd_device.c kfd_chardev.c kfd_process.c kfd_pasid.c kfd_topology.c kfd_doorbell.c kfd_mqd_manager.c kfd_device_queue_manager.c kfd_kernel_queue.c kfd_interrupt.c kfd_mqd_manager_v11.c amdgpu_amdkfd_gpuvm.c kfd_events.c kfd_queue.c kfd_flat_memory.c kfd_process_queue_manager.c kfd_freebsd_stubs.c kfd_device_queue_manager_v11.c kfd_int_process_v11.c kfd_packet_manager.c kfd_crat.c 
+    kfd_module.c kfd_device.c kfd_chardev.c kfd_process.c kfd_pasid.c kfd_topology.c kfd_doorbell.c kfd_mqd_manager.c kfd_device_queue_manager.c kfd_kernel_queue.c kfd_interrupt.c kfd_mqd_manager_v11.c amdgpu_amdkfd_gpuvm.c kfd_events.c kfd_queue.c kfd_flat_memory.c kfd_process_queue_manager.c kfd_freebsd_stubs.c kfd_device_queue_manager_v11.c kfd_int_process_v11.c kfd_packet_manager.c kfd_crat.c kfd_svm.c 
 #    kfd_crat.c \
 #    kfd_events.c \
 #    kfd_interrupt.c \

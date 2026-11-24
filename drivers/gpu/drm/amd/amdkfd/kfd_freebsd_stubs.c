@@ -14,6 +14,7 @@
 #include "kfd_debug.h"         /* kfd_dbg_* prototypes */
 #include "kfd_smi_events.h"    /* kfd_smi_event_* prototypes */
 #include "kfd_crat.h"          /* kfd_create_crat_image_virtual, etc. */
+#include "kfd_migrate.h"       /* svm_migrate_* */
 
 // temp
 
@@ -181,6 +182,64 @@ void kfd_smi_event_update_gpu_reset(struct kfd_node *dev, bool post_reset,
 void kfd_smi_event_update_thermal_throttling(struct kfd_node *dev,
 					     uint64_t throttle_bitmask)
 {
+}
+
+void kfd_smi_event_page_fault_start(struct kfd_node *node, pid_t pid,
+				    unsigned long address, bool write_fault,
+				    ktime_t ts)
+{
+}
+
+void kfd_smi_event_page_fault_end(struct kfd_node *node, pid_t pid,
+				  unsigned long address, bool migration)
+{
+}
+
+void kfd_smi_event_unmap_from_gpu(struct kfd_node *node, pid_t pid,
+				  unsigned long address, unsigned long last,
+				  uint32_t trigger)
+{
+}
+
+/* ---------- kfd_migrate ---------- */
+
+/*
+ * SVM migration between system memory and VRAM needs ZONE_DEVICE
+ * (device-private struct pages, migrate_vma_*()), which FreeBSD does not
+ * have, so kfd_migrate.c is not built.  As in Linux, the SVM API is then
+ * only offered on APUs (KFD_IS_SVM_API_SUPPORTED() requires a device page
+ * map or AMD_IS_APU), where SVM ranges always stay in system memory:
+ * prefetch and restore locations are forced to system memory for APUs, so
+ * nothing ever migrates to VRAM and actual_loc stays 0.
+ */
+int kgd2kfd_init_zone_device(struct amdgpu_device *adev)
+{
+	/* Same early checks as kfd_migrate.c */
+	if (amdgpu_ip_version(adev, GC_HWIP, 0) < IP_VERSION(9, 0, 1))
+		return -EINVAL;
+
+	if (adev->flags & AMD_IS_APU)
+		return 0;
+
+	/* No device page map: SVM stays disabled on this dGPU. */
+	return -EOPNOTSUPP;
+}
+
+int svm_migrate_to_vram(struct svm_range *prange, uint32_t best_loc,
+			unsigned long start, unsigned long last,
+			struct mm_struct *mm, uint32_t trigger)
+{
+	return -EOPNOTSUPP;
+}
+
+int svm_migrate_vram_to_ram(struct svm_range *prange, struct mm_struct *mm,
+			    unsigned long start_mgr, unsigned long last_mgr,
+			    uint32_t trigger, struct page *fault_page)
+{
+	/* Nothing can be in VRAM, see above. */
+	if (WARN_ON_ONCE(prange->actual_loc))
+		return -EOPNOTSUPP;
+	return 0;
 }
 
 /* ---------- kfd_crat ---------- */
