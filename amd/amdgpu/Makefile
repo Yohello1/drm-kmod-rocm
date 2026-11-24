@@ -306,7 +306,6 @@ SRCS=	acp_hw.c
 #	
 # amdgpu
 # amdgpu_acp.c \ # not yet - need i2s
-# amdgpu_hmm.c \  # disabled
 
 SRCS+=	amdgpu_aca.c \
 	amdgpu_afmt.c \
@@ -343,6 +342,7 @@ SRCS+=	amdgpu_aca.c \
 	amdgpu_gfx.c \
 	amdgpu_gmc.c \
 	amdgpu_gtt_mgr.c \
+	amdgpu_hmm.c \
 	amdgpu_preempt_mgr.c \
 	amdgpu_hdp.c \
 	amdgpu_i2c.c \
@@ -673,6 +673,10 @@ SRCS+=	dce_abm.c \
 CFLAGS+= -I./../../drivers/gpu/drm/amd/amdkfd
 CFLAGS+= -DCONFIG_HAVE_AMDGPU_KFD
 CFLAGS+= -DCONFIG_HSA_AMD
+# Userptr BOs: MMU interval notifiers and HMM are provided by LinuxKPI.
+CFLAGS+= -DCONFIG_MMU_NOTIFIER
+CFLAGS+= -DCONFIG_HMM_MIRROR
+CFLAGS+= -DCONFIG_DRM_AMDGPU_USERPTR
 CFLAGS+= -Og
 SRCS+= \
     kfd_module.c kfd_device.c kfd_chardev.c kfd_process.c kfd_pasid.c kfd_topology.c kfd_doorbell.c kfd_mqd_manager.c kfd_device_queue_manager.c kfd_kernel_queue.c kfd_interrupt.c kfd_mqd_manager_v11.c amdgpu_amdkfd_gpuvm.c kfd_events.c kfd_queue.c kfd_flat_memory.c kfd_process_queue_manager.c kfd_freebsd_stubs.c kfd_device_queue_manager_v11.c kfd_int_process_v11.c kfd_packet_manager.c kfd_crat.c 

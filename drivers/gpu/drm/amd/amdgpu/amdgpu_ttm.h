@@ -183,7 +183,7 @@ int amdgpu_ttm_alloc_gart(struct ttm_buffer_object *bo);
 void amdgpu_ttm_recover_gart(struct ttm_buffer_object *tbo);
 uint64_t amdgpu_ttm_domain_start(struct amdgpu_device *adev, uint32_t type);
 
-#if IS_ENABLED(CONFIG_DRM_AMDGPU_USERPTR) || defined(__FreeBSD__)
+#if IS_ENABLED(CONFIG_DRM_AMDGPU_USERPTR)
 int amdgpu_ttm_tt_get_user_pages(struct amdgpu_bo *bo, struct page **pages,
 				 struct hmm_range **range);
 void amdgpu_ttm_tt_discard_user_pages(struct ttm_tt *ttm,

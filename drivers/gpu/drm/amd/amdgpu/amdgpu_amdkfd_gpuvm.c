@@ -2533,24 +2533,14 @@ int amdgpu_amdkfd_evict_userptr(struct mmu_interval_notifier *mni,
                 return 0;
 
         mutex_lock(&process_info->notifier_lock);
-#ifdef __FreeBSD__
-    (void)mni;
-    (void)cur_seq;
-#else
-    mmu_interval_set_seq(mni, cur_seq);
-#endif
+        mmu_interval_set_seq(mni, cur_seq);
 
 
         mem->invalid++;
         if (++process_info->evicted_bos == 1) {
                 /* First eviction, stop the queues */
-                #ifdef __FreeBSD__
-		r = kgd2kfd_quiesce_mm(current->mm,
-				       KFD_QUEUE_EVICTION_TRIGGER_USERPTR);
-#else
 		r = kgd2kfd_quiesce_mm(mni->mm,
 				       KFD_QUEUE_EVICTION_TRIGGER_USERPTR);
-#endif
 		if (r)
                         pr_err("Failed to quiesce KFD\n");
         #ifdef __FreeBSD__
