@@ -1409,7 +1409,7 @@ static int init_kfd_vm(struct amdgpu_vm *vm, void **process_info,
                 }
 
 #ifdef __FreeBSD__
-    info->pid = task_pid_nr(current->group_leader);
+		info->pid = task_pid_group_leader(current);
 #else
     info->pid = pid_nr(get_task_pid(current->group_leader, PIDTYPE_PID));
 #endif
@@ -2835,7 +2835,8 @@ static void amdgpu_amdkfd_restore_userptr_worker(struct work_struct *work)
         /* Reference task and mm in case of concurrent process termination */
         
 #ifdef __FreeBSD__
-    usertask = current; 
+	/* LinuxKPI has no struct pid; process_info->pid is the process ID. */
+	usertask = linux_get_pid_task(process_info->pid);
 #else
     struct pid *pid_struct = find_get_pid(process_info->pid);
     usertask = get_pid_task(pid_struct, PIDTYPE_PID);
