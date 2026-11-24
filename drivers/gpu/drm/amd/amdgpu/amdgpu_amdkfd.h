@@ -115,9 +115,7 @@ struct amdgpu_kfd_dev {
 	struct work_struct reset_work;
 
 	/* HMM page migration MEMORY_DEVICE_PRIVATE mapping */
-#ifdef __linux__
 	struct dev_pagemap pgmap;
-#endif
 
 	/* Client for KFD BO GEM handle allocations */
 	struct drm_client_dev client;
